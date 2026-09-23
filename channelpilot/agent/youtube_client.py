@@ -21,11 +21,24 @@ class NotConnected(Exception):
 
 
 class YouTubeClient:
+    # Fallback scopes (used when config.yaml doesn't define them).
+    DEFAULT_SCOPES_READ = [
+        "https://www.googleapis.com/auth/youtube.readonly",
+        "https://www.googleapis.com/auth/yt-analytics.readonly",
+    ]
+    DEFAULT_SCOPES_MANAGE = [
+        "https://www.googleapis.com/auth/youtube",
+        "https://www.googleapis.com/auth/yt-analytics.readonly",
+    ]
+
     def __init__(self, cfg, manage=False):
         self.cfg = cfg
         self.manage = manage
         ycfg = cfg["youtube"]
         self.scopes = ycfg.get("scopes_manage") if manage else ycfg.get("scopes_read")
+        if not self.scopes:
+            self.scopes = (self.DEFAULT_SCOPES_MANAGE if manage
+                           else self.DEFAULT_SCOPES_READ)
         self.secrets = _p(ycfg["client_secrets_file"])
         self.token_file = _p(ycfg["token_manage_file"] if manage else ycfg["token_read_file"])
 
