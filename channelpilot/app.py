@@ -249,6 +249,9 @@ def api_seo(tool):
 
 # ---------------- connect ----------------
 def _redirect_uri():
+    if HOSTED:
+        # Behind Render's proxy the app only sees http; the public URL is https.
+        return "https://" + request.host + "/oauth2callback"
     return request.url_root.rstrip("/") + "/oauth2callback"
 
 
