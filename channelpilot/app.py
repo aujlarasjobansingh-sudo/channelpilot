@@ -294,8 +294,12 @@ def oauth2callback():
     if not HOSTED:
         return redirect("/")
     yt = get_yt(manage=session.get("oauth_manage", False))
+    auth_response = request.url
+    if HOSTED and auth_response.startswith("http://"):
+        # Render terminates HTTPS at its proxy; the app only sees http.
+        auth_response = "https://" + auth_response[len("http://"):]
     try:
-        token_json = yt.web_auth_finish(_redirect_uri(), request.url)
+        token_json = yt.web_auth_finish(_redirect_uri(), auth_response)
     except Exception as e:
         return (f"<body style='font-family:sans-serif;padding:40px'><h2>Login failed</h2>"
                 f"<p>{e}</p><p><a href='/'>Back</a></p></body>")
