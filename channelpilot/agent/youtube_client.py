@@ -110,23 +110,24 @@ class YouTubeClient:
             return False, f"Login failed: {e}"
 
     def web_auth_url(self, redirect_uri):
-        """Start of the web OAuth flow (server). Returns (auth_url, state) or (None, error)."""
+        """Start of the web OAuth flow (server). Returns (auth_url, state, code_verifier) or (None, error, None)."""
         cfg = self._client_config()
         if not cfg:
             return None, ("No YouTube client configured. Set YOUTUBE_CLIENT_JSON in the service's "
-                          "environment variables (see DEPLOY_PHONE.md).")
+                          "environment variables (see DEPLOY_PHONE.md)."), None
         try:
             flow = Flow.from_client_config(cfg, scopes=self.scopes, redirect_uri=redirect_uri)
             auth_url, state = flow.authorization_url(
                 access_type="offline", prompt="consent", include_granted_scopes="true")
-            return auth_url, state
+            return auth_url, state, flow.code_verifier
         except Exception as e:
-            return None, f"Couldn't start Google login: {e}"
+            return None, f"Couldn't start Google login: {e}", None
 
-    def web_auth_finish(self, redirect_uri, authorization_response):
+    def web_auth_finish(self, redirect_uri, authorization_response, code_verifier=None):
         """End of the web OAuth flow. Returns the token JSON (user saves it as an env var)."""
         cfg = self._client_config()
-        flow = Flow.from_client_config(cfg, scopes=self.scopes, redirect_uri=redirect_uri)
+        kw = {"code_verifier": code_verifier, "autogenerate_code_verifier": False} if code_verifier else {}
+        flow = Flow.from_client_config(cfg, scopes=self.scopes, redirect_uri=redirect_uri, **kw)
         flow.fetch_token(authorization_response=authorization_response)
         self._save(flow.credentials)
         return flow.credentials.to_json()
