@@ -118,7 +118,7 @@ class YouTubeClient:
         try:
             flow = Flow.from_client_config(cfg, scopes=self.scopes, redirect_uri=redirect_uri)
             auth_url, state = flow.authorization_url(
-                access_type="offline", prompt="consent", include_granted_scopes="true")
+                access_type="offline", prompt="consent")
             return auth_url, state, flow.code_verifier
         except Exception as e:
             return None, f"Couldn't start Google login: {e}", None
