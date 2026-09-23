@@ -259,10 +259,11 @@ def _redirect_uri():
 def connect():
     if HOSTED:
         yt = get_yt(manage=False)
-        auth_url, state = yt.web_auth_url(_redirect_uri())
+        auth_url, state, verifier = yt.web_auth_url(_redirect_uri())
         if not auth_url:
             return f"<p>{state}</p><p><a href='/'>Back</a></p>"
         session["oauth_state"] = state
+        session["oauth_verifier"] = verifier
         session["oauth_manage"] = False
         return redirect(auth_url)
     yt = get_yt(manage=False)
@@ -276,10 +277,11 @@ def connect():
 def connect_manage():
     if HOSTED:
         yt = get_yt(manage=True)
-        auth_url, state = yt.web_auth_url(_redirect_uri())
+        auth_url, state, verifier = yt.web_auth_url(_redirect_uri())
         if not auth_url:
             return f"<p>{state}</p><p><a href='/'>Back</a></p>"
         session["oauth_state"] = state
+        session["oauth_verifier"] = verifier
         session["oauth_manage"] = True
         return redirect(auth_url)
     yt = get_yt(manage=True)
@@ -299,7 +301,9 @@ def oauth2callback():
         # Render terminates HTTPS at its proxy; the app only sees http.
         auth_response = "https://" + auth_response[len("http://"):]
     try:
-        token_json = yt.web_auth_finish(_redirect_uri(), auth_response)
+        token_json = yt.web_auth_finish(
+            _redirect_uri(), auth_response,
+            code_verifier=session.get("oauth_verifier"))
     except Exception as e:
         return (f"<body style='font-family:sans-serif;padding:40px'><h2>Login failed</h2>"
                 f"<p>{e}</p><p><a href='/'>Back</a></p></body>")
