@@ -1,0 +1,28 @@
+# ChannelPilot configuration. Every setting has a plain comment.
+
+agent_name: "ChannelPilot"
+
+brain:
+  # "ollama" = fully local and free (recommended). "openai_compatible" = use a cloud API key instead.
+  provider: "ollama"
+  ollama_url: "http://localhost:11434"
+  ollama_model: "llama3.1:8b"
+  # Only used when provider is "openai_compatible":
+  api_base: "https://api.openai.com/v1"
+  api_key: ""
+  api_model: "gpt-4o-mini"
+
+youtube:
+  # You create this file when you connect your channel (README -> "Connect your channel").
+  client_secrets_file: "data/client_secrets.json"
+  token_read_file: "data/token_read.json"
+  token_manage_file: "data/token_manage.json"
+
+server:
+  host: "127.0.0.1"
+  port: 5000
+  secret_key: "change-me-to-anything-random"
+
+briefing:
+  days_back: 28
+  save_to: "data/briefings"

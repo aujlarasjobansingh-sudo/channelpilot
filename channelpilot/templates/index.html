@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ agent_name }}</title>
+<style>
+  :root { --bg:#14161a; --panel:#1d2026; --line:#2c313a; --txt:#e8eaed; --dim:#9aa0a6; --acc:#4da3ff; --ok:#3ddc84; --warn:#ffb74d; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  header { padding:14px 18px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
+  header h1 { font-size:18px; margin:0; }
+  #statusbar { margin-left:auto; font-size:13px; color:var(--dim); display:flex; gap:14px; align-items:center; }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:1px; }
+  .on { background:var(--ok); } .off { background:var(--warn); }
+  nav { display:flex; gap:4px; padding:10px 18px 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  nav button { background:none; border:none; color:var(--dim); padding:10px 14px; font-size:15px; cursor:pointer; border-bottom:2px solid transparent; }
+  nav button.active { color:var(--txt); border-bottom-color:var(--acc); }
+  main { padding:18px; max-width:900px; margin:0 auto; }
+  .tab { display:none; } .tab.active { display:block; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:14px; }
+  .card h3 { margin:0 0 10px; font-size:16px; }
+  input, textarea, select { width:100%; background:#101216; border:1px solid var(--line); color:var(--txt); border-radius:8px; padding:10px; font-size:14px; margin:6px 0; }
+  textarea { min-height:90px; resize:vertical; font-family:inherit; }
+  button.btn { background:var(--acc); color:#06121f; border:none; border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer; margin:6px 6px 6px 0; }
+  button.btn.ghost { background:none; color:var(--acc); border:1px solid var(--acc); }
+  button.btn:disabled { opacity:.5; cursor:default; }
+  pre.out { white-space:pre-wrap; word-wrap:break-word; background:#101216; border:1px solid var(--line); border-radius:8px; padding:14px; font-size:14px; line-height:1.55; font-family:inherit; }
+  #chatlog { display:flex; flex-direction:column; gap:10px; margin-bottom:12px; max-height:60vh; overflow-y:auto; }
+  .msg { padding:10px 14px; border-radius:10px; max-width:85%; white-space:pre-wrap; font-size:14px; line-height:1.5; }
+  .msg.user { align-self:flex-end; background:#2b3a4d; }
+  .msg.bot { align-self:flex-start; background:var(--panel); border:1px solid var(--line); }
+  .row { display:flex; gap:8px; } .row input { flex:1; margin:0; }
+  .vrow { display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--line); }
+  .vrow:last-child { border-bottom:none; }
+  .vrow .meta { flex:1; font-size:13px; color:var(--dim); }
+  .vrow .meta b { color:var(--txt); font-size:14px; display:block; margin-bottom:4px; }
+  .small { font-size:13px; color:var(--dim); }
+  .editform { margin-top:8px; }
+  a { color:var(--acc); }
+</style>
+</head>
+<body>
+<header>
+  <h1>{{ agent_name }}</h1>
+  <div id="statusbar">checking…</div>
+</header>
+<nav>
+  <button class="active" data-tab="chat">Chat</button>
+  <button data-tab="briefing">Briefing</button>
+  <button data-tab="seo">SEO Studio</button>
+  <button data-tab="manage">Manage</button>
+  <button data-tab="connect">Connect</button>
+</nav>
+<main>
+  <!-- CHAT -->
+  <section class="tab active" id="tab-chat">
+    <div class="card">
+      <div id="chatlog"></div>
+      <div class="row">
+        <input id="chatinput" placeholder="Ask about your channel… (try: briefing)" autocomplete="off">
+        <button class="btn" onclick="sendChat()">Send</button>
+      </div>
+      <p class="small">Tip: type <b>briefing</b> any time for a full channel report.</p>
+    </div>
+  </section>
+
+  <!-- BRIEFING -->
+  <section class="tab" id="tab-briefing">
+    <div class="card">
+      <h3>Channel briefing</h3>
+      <p class="small">What's going on with your channel and what to improve — from real data.</p>
+      <button class="btn" onclick="genBriefing(false)">Generate briefing</button>
+      <button class="btn ghost" onclick="genBriefing(true)">Generate + save to file</button>
+      <pre class="out" id="briefout" style="display:none"></pre>
+    </div>
+  </section>
+
+  <!-- SEO -->
+  <section class="tab" id="tab-seo">
+    <div class="card">
+      <h3>SEO Studio</h3>
+      <input id="seo-topic" placeholder="What is the video about?">
+      <input id="seo-niche" placeholder="Niche / channel topic (optional)">
+      <textarea id="seo-points" placeholder="Key points / outline (for descriptions, chapters, full package)"></textarea>
+      <div>
+        <button class="btn" onclick="runSeo('titles')">Titles</button>
+        <button class="btn" onclick="runSeo('description')">Description</button>
+        <button class="btn" onclick="runSeo('tags')">Tags</button>
+        <button class="btn" onclick="runSeo('hashtags')">Hashtags</button>
+        <button class="btn" onclick="runSeo('chapters')">Chapters</button>
+        <button class="btn" onclick="runSeo('package')">Full package</button>
+      </div>
+      <pre class="out" id="seoout" style="display:none"></pre>
+    </div>
+  </section>
+
+  <!-- MANAGE -->
+  <section class="tab" id="tab-manage">
+    <div class="card">
+      <h3>Videos</h3>
+      <button class="btn ghost" onclick="loadVideos()">Load my videos</button>
+      <div id="videos"></div>
+    </div>
+    <div class="card">
+      <h3>Recent comments</h3>
+      <button class="btn ghost" onclick="loadComments()">Load comments</button>
+      <div id="comments"></div>
+    </div>
+    <div class="card">
+      <h3>Upload a video</h3>
+      <input type="file" id="up-file" accept="video/*">
+      <input id="up-title" placeholder="Title">
+      <textarea id="up-desc" placeholder="Description"></textarea>
+      <input id="up-tags" placeholder="Tags (comma separated)">
+      <select id="up-privacy">
+        <option value="private">Private</option>
+        <option value="unlisted">Unlisted</option>
+        <option value="public">Public</option>
+      </select>
+      <button class="btn" onclick="uploadVideo()">Upload</button>
+      <pre class="out" id="upout" style="display:none"></pre>
+    </div>
+  </section>
+
+  <!-- CONNECT -->
+  <section class="tab" id="tab-connect">
+    <div class="card">
+      <h3>Channel connection</h3>
+      <div id="conninfo" class="small">checking…</div>
+      <p class="small">Not connected yet? Follow the <b>README.md</b> section "Connect your channel"
+      (create the Google Cloud OAuth client, download the JSON as <b>data/client_secrets.json</b>), then:</p>
+      <button class="btn" onclick="location.href='/connect'">Connect channel (read)</button>
+      <button class="btn ghost" onclick="location.href='/connect-manage'">Grant manage access</button>
+      <p class="small">Read = see stats, videos, comments. Manage = also update titles/descriptions/tags,
+      reply to comments, upload videos. The agent always shows the exact change and asks first.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let history = [];
+
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  $("tab-" + b.dataset.tab).classList.add("active");
+}));
+
+async function loadStatus() {
+  try {
+    const r = await fetch("/api/status"); const s = await r.json();
+    const d = on => `<span class="dot ${on ? "on" : "off"}"></span>`;
+    $("statusbar").innerHTML =
+      `${d(s.brain)} brain (${esc(s.brain_provider)}) &nbsp;` +
+      `${d(s.youtube_read)} channel ${s.channel ? "· " + esc(s.channel) : "(not connected)"} &nbsp;` +
+      `${d(s.youtube_manage)} manage access`;
+    $("conninfo").innerHTML =
+      `Brain: ${s.brain ? "running" : "<b>not running</b> — start Ollama or set an API key"}<br>` +
+      `Channel: ${s.channel ? esc(s.channel) : "<b>not connected</b>"}<br>` +
+      `Manage access: ${s.youtube_manage ? "granted" : "not granted"}`;
+  } catch(e) { $("statusbar").textContent = "app not responding"; }
+}
+
+function addMsg(role, text) {
+  const div = document.createElement("div");
+  div.className = "msg " + role;
+  div.textContent = text;
+  $("chatlog").appendChild(div);
+  $("chatlog").scrollTop = $("chatlog").scrollHeight;
+}
+
+async function sendChat() {
+  const inp = $("chatinput"); const text = inp.value.trim();
+  if (!text) return;
+  inp.value = "";
+  history.push({role:"user", content:text});
+  addMsg("user", text);
+  addMsg("bot", "…");
+  try {
+    const r = await fetch("/api/chat", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({messages: history})});
+    const j = await r.json();
+    document.querySelectorAll("#chatlog .msg.bot:last-child");
+    const bots = document.querySelectorAll("#chatlog .msg.bot");
+    bots[bots.length-1].textContent = j.reply;
+    history.push({role:"assistant", content:j.reply});
+  } catch(e) {
+    const bots = document.querySelectorAll("#chatlog .msg.bot");
+    bots[bots.length-1].textContent = "Something went wrong talking to the app. Is it still running?";
+  }
+}
+$("chatinput").addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
+
+async function genBriefing(save) {
+  const o = $("briefout"); o.style.display = "block"; o.textContent = "Working on it…";
+  const r = await fetch("/api/briefing?save=" + (save ? "1" : "0"));
+  const j = await r.json();
+  o.textContent = j.briefing;
+}
+
+async function runSeo(tool) {
+  const o = $("seoout"); o.style.display = "block"; o.textContent = "Writing…";
+  const body = {topic: $("seo-topic").value, niche: $("seo-niche").value,
+                points: $("seo-points").value, outline: $("seo-points").value, count: 10};
+  const r = await fetch("/api/seo/" + tool, {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(body)});
+  const j = await r.json();
+  o.textContent = j.ok ? j.message : ("⚠ " + j.message);
+}
+
+async function loadVideos() {
+  const box = $("videos"); box.innerHTML = "<p class='small'>Loading…</p>";
+  const r = await fetch("/api/videos"); const j = await r.json();
+  if (!j.ok) { box.innerHTML = "<p class='small'>⚠ " + esc(j.message) + "</p>"; return; }
+  box.innerHTML = j.videos.map(v => `
+    <div class="vrow" id="v-${v.id}">
+      <div class="meta"><b>${esc(v.title)}</b>
+        ${v.views.toLocaleString()} views · ${esc(v.published_at)} · <a href="${v.url}" target="_blank">watch</a>
+        <div class="editform" id="e-${v.id}" style="display:none">
+          <input id="t-${v.id}" value="${esc(v.title)}" placeholder="Title">
+          <textarea id="d-${v.id}" placeholder="Description (leave blank to keep)"></textarea>
+          <input id="g-${v.id}" placeholder="Tags, comma, separated (leave blank to keep)">
+          <button class="btn" onclick="saveVideo('${v.id}')">Save changes</button>
+        </div>
+      </div>
+      <button class="btn ghost" onclick="document.getElementById('e-${v.id}').style.display='block'">Edit</button>
+    </div>`).join("") || "<p class='small'>No videos found.</p>";
+}
+
+async function saveVideo(id) {
+  const title = $("t-" + id).value, desc = $("d-" + id).value, tags = $("g-" + id).value;
+  if (!confirm("Apply these changes to the video on YouTube?")) return;
+  const r = await fetch("/api/video/update", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({video_id:id, title:title,
+      description: desc || null, tags: tags || null})});
+  const j = await r.json();
+  alert(j.ok ? "Done: " + j.message : "⚠ " + j.message);
+  if (j.ok) loadVideos();
+}
+
+async function loadComments() {
+  const box = $("comments"); box.innerHTML = "<p class='small'>Loading…</p>";
+  const r = await fetch("/api/comments"); const j = await r.json();
+  if (!j.ok) { box.innerHTML = "<p class='small'>⚠ " + esc(j.message) + "</p>"; return; }
+  box.innerHTML = j.comments.map(c => `
+    <div class="vrow">
+      <div class="meta"><b>${esc(c.author)}</b> on "${esc(c.video_title)}"
+        <div style="color:var(--txt);margin:4px 0">${esc(c.text)}</div>
+        <span class="small">${esc(c.published_at)} · ${c.likes} likes</span>
+        <div class="row" style="margin-top:6px">
+          <input id="r-${esc(c.comment_id)}" placeholder="Write a reply…">
+          <button class="btn" onclick="replyComment('${esc(c.comment_id)}')">Reply</button>
+        </div>
+      </div>
+    </div>`).join("") || "<p class='small'>No comments found.</p>";
+}
+
+async function replyComment(cid) {
+  const text = $("r-" + cid).value.trim();
+  if (!text) { alert("Write the reply first."); return; }
+  if (!confirm("Post this reply on YouTube?")) return;
+  const r = await fetch("/api/comment/reply", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({comment_id: cid, text})});
+  const j = await r.json();
+  alert(j.ok ? "Done: " + j.message : "⚠ " + j.message);
+}
+
+async function uploadVideo() {
+  const f = $("up-file").files[0];
+  if (!f) { alert("Choose a video file first."); return; }
+  if (!$("up-title").value.trim()) { alert("Give the video a title first."); return; }
+  if (!confirm(`Upload "${f.name}" to YouTube as ${$("up-privacy").value}?`)) return;
+  const o = $("upout"); o.style.display = "block"; o.textContent = "Uploading… this can take a while.";
+  const fd = new FormData();
+  fd.append("file", f);
+  fd.append("title", $("up-title").value);
+  fd.append("description", $("up-desc").value);
+  fd.append("tags", $("up-tags").value);
+  fd.append("privacy", $("up-privacy").value);
+  const r = await fetch("/api/video/upload", {method:"POST", body: fd});
+  const j = await r.json();
+  o.textContent = (j.ok ? "✓ " : "⚠ ") + j.message;
+}
+
+addMsg("bot", "Hey, I'm ChannelPilot. Ask me about your channel, or type \"briefing\" for a full report. If I'm not connected to your channel yet, open the Connect tab when you're ready — the README walks you through it.");
+loadStatus();
+</script>
+</body>
+</html>
