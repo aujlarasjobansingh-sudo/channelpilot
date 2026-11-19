@@ -248,7 +248,7 @@ if __name__ == '__main__':
         p.stdin.write(surf.makeImageSnapshot().toarray(colorType=skia.kBGRA_8888_ColorType).tobytes())
     p.stdin.close(); assert p.wait() == 0
     aw = out[:-4] + '_a.wav'
-    build(DUR, [(0, vo_wav, 0, DUR)], CUES, aw, music_ranges=[(3.0, DUR)], music_db=-27, clips_audio=[(0, A('hook_audio.wav'), -4)])
+    build(DUR, [(0, vo_wav, 0, DUR)], CUES, aw, music_ranges=None, clips_audio=[(0, A('hook_audio.wav'), -4)])
     subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', tmp, '-i', aw, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
                     '-shortest', '-movflags', '+faststart', out], check=True)
     for f in (tmp, aw, aw + '.raw.wav'):
