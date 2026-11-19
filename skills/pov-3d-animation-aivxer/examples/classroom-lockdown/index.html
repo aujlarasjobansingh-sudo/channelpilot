@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: Rubik; font-weight: 700; src: url(node_modules/@fontsource/rubik/files/rubik-latin-700-normal.woff2); }
+  @font-face { font-family: Rubik; font-weight: 800; src: url(node_modules/@fontsource/rubik/files/rubik-latin-800-normal.woff2); }
+  @font-face { font-family: Rubik; font-weight: 900; src: url(node_modules/@fontsource/rubik/files/rubik-latin-900-normal.woff2); }
+  html, body { margin: 0; padding: 0; background: #000; }
+  #stage { position: relative; width: 720px; height: 1280px; overflow: hidden; }
+  canvas { display: block; }
+  .hud { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; font-family: Rubik, sans-serif; }
+  #title { position: absolute; left: 42px; top: 98px; }
+  #title .l1 { font-weight: 900; font-size: 36px; color: #fff; letter-spacing: 0.3px;
+    -webkit-text-stroke: 7px #111; paint-order: stroke fill; }
+  #title .l2 { font-weight: 800; font-size: 22px; color: #f6e2a0; margin-top: 4px;
+    -webkit-text-stroke: 5px #111; paint-order: stroke fill; }
+  #sub { position: absolute; top: 839px; left: 0; width: 100%; height: 70px; }
+  #sub span { position: absolute; left: 43.4%; top: 0; transform: translateX(-50%); white-space: nowrap;
+    font-weight: 800; font-size: 44.5px; color: #f5d23a; letter-spacing: 0.2px;
+    -webkit-text-stroke: 6px #141414; paint-order: stroke fill;
+    text-shadow: 0 3px 0 rgba(0,0,0,0.45); }
+</style>
+<script type="importmap">
+{ "imports": { "three": "./node_modules/three/build/three.module.js",
+               "three/addons/": "./node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" width="720" height="1280"></canvas>
+  <div class="hud" id="hud">
+    <div id="title"><div class="l1">TUESDAY • 10:42 AM</div><div class="l2">Room 214 — Biology final</div></div>
+    <div id="sub"><span id="subtxt"></span></div>
+  </div>
+</div>
+<script type="module" src="scene.js"></script>
+</body>
+</html>

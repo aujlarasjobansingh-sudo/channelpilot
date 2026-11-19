@@ -1,0 +1,19 @@
+POV 3D Animation skill for Claude — made by aivxer
+
+INSTALL
+1. Open Claude → Customize → Skills → "+" → Create skill → Upload a skill.
+2. Upload this zip (pov-3d-animation-aivxer.zip).
+3. Start a new chat in Claude (with code execution / Claude Code) and say, for example:
+   "Make a POV horror short about a night-shift cashier at a gas station"
+   or attach a reference video and say "Recreate this video's style".
+
+WHAT YOU GET
+- The full skill (SKILL.md) with the step-by-step workflow Claude follows.
+- scripts/analyze_reference.py: measures a reference video's lens, camera moves, colours and subtitle timing.
+- Two complete example projects: a 4-second style-match preview and a full 1:56 episode
+  (3D set, characters with lip-sync, camera moves, ElevenLabs voices, SFX, subtitles, end-screen choice).
+
+NOTES
+- ElevenLabs voices are optional (bring your own API key). Free ElevenLabs plans don't allow commercial use.
+- Rendering a 2-minute episode takes about an hour of compute; previews take a few minutes.
+- Check the menu path above matches your Claude app before following it.
