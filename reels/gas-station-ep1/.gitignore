@@ -5,3 +5,4 @@ out/dbg_*.png
 out/logs/
 out/*.wav
 voices_models/
+voices_rec/*.wav
