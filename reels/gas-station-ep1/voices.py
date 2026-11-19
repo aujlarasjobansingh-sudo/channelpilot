@@ -116,7 +116,7 @@ def fit_recorded(a, lid, spk, t0, style):
     k = ORDER.index(lid)
     prev_end = END[ORDER[k - 1]] if k else 0
     start = max(t0 - 0.9, prev_end + 0.1)
-    nxt = T0[ORDER[k + 1]] - 0.08 if k + 1 < len(ORDER) else 116.0
+    nxt = T0[ORDER[k + 1]] - 0.08 if k + 1 < len(ORDER) else 115.2
     avail = max(0.5, nxt - start)
     if len(a) / SR > avail:
         f = min(1.12, (len(a) / SR) / avail)
