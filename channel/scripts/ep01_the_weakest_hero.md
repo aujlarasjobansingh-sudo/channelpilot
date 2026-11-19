@@ -1,7 +1,7 @@
 # EP 01 — "What Happens If You Become the Weakest Hero Alive?"
 
 **Format:** "In This World..." POV story · English narration · 2D/3D animated · no subtitles
-**Target length:** ~24 min (≈3,600 words at ~150 wpm)
+**Target length:** ~21–23 min (≈2,950 narration words at ~140 wpm, plus music/action beats)
 **World:** superhero city under monster attack (own world, own names, own ranks)
 **Hero:** YOU, red tee with white bolt, black spiky hair (channel mascot)
 
