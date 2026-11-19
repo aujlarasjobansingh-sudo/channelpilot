@@ -6,3 +6,5 @@ out/logs/
 out/*.wav
 voices_models/
 voices_rec/*.wav
+out/episode1_voices_*.mp3
+out/*.zip
