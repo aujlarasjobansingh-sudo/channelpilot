@@ -91,18 +91,71 @@ def words_chunks(text, n_words_max=3):
     if cur: chunks.append(' '.join(cur))
     return chunks
 
+# ---------------------------------------------------------------- recorded (ElevenLabs) lines: tighten + schedule
+ORDER = [l[0] for l in LINES]
+T0 = {l[0]: l[2] for l in LINES}
+SCHED, END = {}, {}
+def compress_pauses(a, keep=0.17, thresh=0.24):
+    env = signal.sosfilt(sos('low', 25, 2), np.abs(a)); quiet = env < 0.012
+    out, i, n = [], 0, len(a)
+    while i < n:
+        if quiet[i]:
+            j = i
+            while j < n and quiet[j]: j += 1
+            seglen = (j - i) / SR
+            out.append(a[i:j] if seglen <= thresh or i == 0 or j == n else np.concatenate([a[i:i + int(keep * SR / 2)], a[j - int(keep * SR / 2):j]]))
+            i = j
+        else:
+            j = i
+            while j < n and not quiet[j]: j += 1
+            out.append(a[i:j]); i = j
+    return np.concatenate(out)
+def fit_recorded(a, lid, spk, t0, style):
+    e = np.where(np.abs(a) > 0.02)[0]; a = a[max(0, e[0] - 480): e[-1] + 2400]
+    a = compress_pauses(a)
+    k = ORDER.index(lid)
+    prev_end = END[ORDER[k - 1]] if k else 0
+    start = max(t0 - 0.9, prev_end + 0.1)
+    nxt = T0[ORDER[k + 1]] - 0.08 if k + 1 < len(ORDER) else 116.0
+    avail = max(0.5, nxt - start)
+    if len(a) / SR > avail:
+        f = min(1.12, (len(a) / SR) / avail)
+        tmp_in, tmp_out = '/tmp/claude-0/_in.wav', '/tmp/claude-0/_out.wav'
+        sf.write(tmp_in, a, SR)
+        import subprocess; subprocess.run(['ffmpeg', '-y', '-v', 'error', '-i', tmp_in, '-af', f'atempo={f:.4f}', tmp_out], check=True)
+        a, _ = sf.read(tmp_out)
+    # start as late as possible (close to the intended beat) while still ending before the next line
+    dur = len(a) / SR
+    start = max(start, min(t0, nxt - dur))
+    SCHED[lid] = round(start, 3); END[lid] = start + dur
+    return a / (np.max(np.abs(a)) + 1e-9) * 0.9
+def process_fx(a, style):
+    rng = np.random.default_rng(len(a))
+    if style.startswith('muffled'):
+        a = signal.sosfilt(sos('low', 2200), a); a = signal.sosfilt(sos('high', 150), a)
+        rv = np.zeros(int(SR * 0.6)); taps = rng.integers(0, len(rv), 30); rv[taps] = rng.uniform(0.05, 0.22, 30) * np.exp(-taps / (SR * 0.15))
+        rv[0] = 1; a = signal.fftconvolve(a, rv)[:len(a) + len(rv) // 2] * 0.8
+    if style == 'vo':
+        rv = np.zeros(int(SR * 1.2)); taps = rng.integers(0, len(rv), 60); rv[taps] = rng.uniform(0.02, 0.1, 60) * np.exp(-taps / (SR * 0.35))
+        rv[0] = 1; a = signal.fftconvolve(a, rv)[:len(a) + len(rv) // 2]
+    return a / (np.max(np.abs(a)) + 1e-9) * 0.9
+
 out = np.zeros(int(SR * TOTAL)); lines_json = []; envs = {s: np.zeros(int(TOTAL * 30) + 1) for s in VOICES}
 for lid, spk, t0, tmax, text, style in LINES:
     rec = os.path.join(HERE, 'voices_rec', lid + '.wav')
     ls, gdb = STYLE[style]
     if os.path.exists(rec):
         a, sr = sf.read(rec, always_2d=True); a = signal.resample_poly(a.mean(1), SR, sr)
+        a = fit_recorded(a, lid, spk, t0, style)
+        t0 = SCHED[lid]
+        if style.startswith('muffled') or style == 'vo': a = process_fx(a, style)
     else:
         a = process(synth(spk, text, ls), style)
         for _ in range(4):                    # tighten until it fits its window
             if t0 + len(a) / SR <= tmax: break
             ls = max(0.78, ls * max(0.85, (tmax - t0) / (len(a) / SR) * 0.98))
             a = process(synth(spk, text, ls), style)
+    if os.path.exists(rec): gdb = {'whisper': -3, 'whisperfast': -2, 'cold': -1}.get(style, 0)
     dur = len(a) / SR
     i0 = int(t0 * SR); n = min(len(a), len(out) - i0)
     out[i0:i0 + n] += a[:n] * 10 ** (gdb / 20)
@@ -114,7 +167,7 @@ for lid, spk, t0, tmax, text, style in LINES:
     # subtitle chunks timed by syllable-ish weight within the voiced span
     voiced = np.where(np.abs(sp) > 0.04)[0]
     v0 = voiced[0] / SR if len(voiced) else 0; v1 = voiced[-1] / SR if len(voiced) else dur
-    if style == 'sigh': v0 = max(v0, 0.6)
+    if style == 'sigh' and not os.path.exists(rec): v0 = max(v0, 0.6)
     chunks = words_chunks(text); wts = [max(2, len(re.sub(r'[^a-zA-Z0-9]', '', c))) + 3 for c in chunks]
     tot = sum(wts); cur = t0 + v0; cj = []
     for c, wgt in zip(chunks, wts):
