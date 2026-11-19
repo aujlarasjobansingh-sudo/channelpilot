@@ -1,0 +1,442 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>What If preview</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+  #stage { position: relative; width: 1280px; height: 720px; overflow: hidden; }
+  canvas { display: block; }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  #lines { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+  #vignette { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(20,0,30,0.55) 100%); }
+  .cap { position: absolute; left: 0; right: 0; bottom: 64px; text-align: center;
+    font-family: "Inter", "DejaVu Sans", sans-serif; font-weight: 900; font-size: 54px;
+    color: #fff; letter-spacing: 1px; line-height: 1.1;
+    -webkit-text-stroke: 9px #120018; paint-order: stroke fill;
+    text-shadow: 0 6px 0 rgba(0,0,0,0.35);
+    opacity: 0; transform-origin: 50% 100%; }
+  .cap b { color: #ffd23a; }
+  .cap i { color: #ff3b3b; font-style: normal; }
+  #title { position: absolute; left: 0; right: 0; top: 250px; text-align: center;
+    font-family: "Inter Display", "Inter", sans-serif; font-weight: 900; font-size: 120px;
+    color: #fff; letter-spacing: 4px; -webkit-text-stroke: 14px #120018; paint-order: stroke fill;
+    opacity: 0; }
+  #title span { color: #ff2d2d; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "/node_modules/three/build/three.module.js",
+  "three/addons/": "/node_modules/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="stage">
+  <div id="vignette"></div>
+  <svg id="lines" viewBox="0 0 1280 720" width="1280" height="720"></svg>
+  <div id="flash"></div>
+  <div class="cap" id="cap1">WHAT HAPPENS IF <b>YOU...</b></div>
+  <div class="cap" id="cap2" style="font-size:46px">...is duniya ke sabse <i>TAAKATWAR</i> hero ban jao?</div>
+  <div id="title">IN THIS <span>WORLD</span>...</div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
+
+const W = 1280, H = 720;
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H);
+renderer.setPixelRatio(1);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.prepend(renderer.domElement);
+const effect = new OutlineEffect(renderer, { defaultThickness: 0.004, defaultColor: [0.07, 0.0, 0.1] });
+
+// ---------- helpers ----------
+let seed = 7;
+const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+const grad = (() => {
+  const d = new Uint8Array([90, 170, 255]);
+  const t = new THREE.DataTexture(d, 3, 1, THREE.RedFormat);
+  t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t;
+})();
+const toon = (color, extra = {}) => new THREE.MeshToonMaterial({ color, gradientMap: grad, ...extra });
+const noOutline = (m) => { m.userData.outlineParameters = { visible: false }; return m; };
+const mesh = (geo, mat, cast = true) => { const m = new THREE.Mesh(geo, mat); m.castShadow = cast; m.receiveShadow = true; return m; };
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const easeOutBack = (x) => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// ---------- scene ----------
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xe9866a, 40, 170);
+const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 600);
+
+// sky dome with gradient (dusk, smoke-tinted)
+const skyMat = noOutline(new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false, fog: false,
+  uniforms: { top: { value: new THREE.Color(0x3a1f6b) }, mid: { value: new THREE.Color(0xf06a4a) },
+              bot: { value: new THREE.Color(0xffc27a) }, clear: { value: 0 } },
+  vertexShader: `varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);} `,
+  fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 bot; uniform float clear; varying vec3 vP;
+    void main(){ float h = vP.y; vec3 c = mix(bot, mid, smoothstep(-0.05, 0.18, h)); c = mix(c, top, smoothstep(0.18, 0.7, h));
+      vec3 blue = mix(vec3(1.0,0.9,0.7), vec3(0.35,0.65,1.0), smoothstep(0.0,0.6,h));
+      float hole = smoothstep(0.55, 0.0, length(vP.xz*vec2(1.0,1.0) - vec2(0.0,-0.55)) - clear*0.6);
+      c = mix(c, blue, hole*clear);
+      gl_FragColor = vec4(c,1.0); }`
+}));
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(400, 32, 16), skyMat));
+
+// lights
+const hemi = new THREE.HemisphereLight(0xffd0a8, 0x4a2a6a, 1.25); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffb070, 2.6);
+sun.position.set(-30, 40, -40); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 160 });
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x9fb8ff, 0.7); fill.position.set(20, 15, 30); scene.add(fill);
+const fistLight = new THREE.PointLight(0xfff1c0, 0, 30, 1.5); scene.add(fistLight);
+
+// ground + street
+const ground = mesh(new THREE.PlaneGeometry(400, 400), toon(0x6c5a7a), false);
+ground.rotation.x = -Math.PI / 2; noOutline(ground.material); scene.add(ground);
+const road = mesh(new THREE.PlaneGeometry(16, 260), toon(0x3b3348), false);
+road.rotation.x = -Math.PI / 2; road.position.set(0, 0.01, -60); noOutline(road.material); scene.add(road);
+for (let z = 20; z > -180; z -= 7) {
+  const dash = mesh(new THREE.PlaneGeometry(0.35, 3), noOutline(toon(0xffe08a)), false);
+  dash.rotation.x = -Math.PI / 2; dash.position.set(0, 0.02, z); scene.add(dash);
+}
+for (const sx of [-1, 1]) {
+  const walk = mesh(new THREE.BoxGeometry(5, 0.35, 260), toon(0x9c8aa6), false);
+  walk.position.set(sx * 10.5, 0.17, -60); scene.add(walk);
+}
+
+// buildings with window textures
+function windowTex(base, lit) {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 256;
+  const g = c.getContext('2d'); g.fillStyle = base; g.fillRect(0, 0, 128, 256);
+  for (let y = 12; y < 250; y += 22) for (let x = 10; x < 120; x += 26) {
+    g.fillStyle = rnd() < 0.35 ? lit : 'rgba(30,20,50,0.55)'; g.fillRect(x, y, 16, 12);
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+}
+const palette = ['#e98d6b', '#c96f8c', '#8f7bc4', '#f2b36d', '#6fa3b8', '#d5786a', '#a587c9'];
+const city = new THREE.Group(); scene.add(city);
+for (const sx of [-1, 1]) {
+  for (let z = 14; z > -170; z -= 0) {
+    const w = 7 + rnd() * 6, d = 7 + rnd() * 7, h = 10 + rnd() * 30 + (z < -40 ? rnd() * 25 : 0);
+    const tex = windowTex(palette[Math.floor(rnd() * palette.length)], '#ffe7a6');
+    tex.repeat.set(Math.max(1, Math.round(w / 6)), Math.max(1, Math.round(h / 12)));
+    const b = mesh(new THREE.BoxGeometry(w, h, d), toon(0xffffff, { map: tex }));
+    b.position.set(sx * (13.5 + w / 2 + rnd() * 2), h / 2, z - d / 2);
+    city.add(b);
+    if (rnd() < 0.5) { // roof detail
+      const r = mesh(new THREE.BoxGeometry(w * 0.4, 2, d * 0.4), toon(0x5c4a70));
+      r.position.set(b.position.x, h + 1, b.position.z); city.add(r);
+    }
+    z -= d + 1 + rnd() * 2;
+  }
+}
+
+// cars (some flipped from the attack)
+const carCols = [0x3fa7ff, 0xffd23a, 0x5fd38a, 0xffffff];
+function car(x, z, rotY, flipped, col) {
+  const g = new THREE.Group();
+  const body = mesh(new THREE.BoxGeometry(2.2, 0.9, 4.2), toon(col)); body.position.y = 0.75; g.add(body);
+  const cab = mesh(new THREE.BoxGeometry(1.9, 0.75, 2.2), toon(0x2a2340)); cab.position.set(0, 1.55, -0.2); g.add(cab);
+  for (const [wx, wz] of [[-1.1, 1.4], [1.1, 1.4], [-1.1, -1.4], [1.1, -1.4]]) {
+    const wh = mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.35, 16), toon(0x1b1626));
+    wh.rotation.z = Math.PI / 2; wh.position.set(wx, 0.42, wz); g.add(wh);
+  }
+  g.position.set(x, 0, z); g.rotation.y = rotY;
+  if (flipped) { g.rotation.z = Math.PI * 0.92; g.position.y = 1.7; }
+  scene.add(g); return g;
+}
+car(-5.5, -8, 0.4, false, carCols[0]);
+car(4.8, -16, -0.9, true, carCols[1]);
+car(-4, -28, 1.4, false, carCols[2]);
+car(-6.5, 3, 0.2, false, carCols[3]);
+car(-6, -45, -0.5, true, carCols[0]);
+
+// rubble rocks
+const rubble = [];
+for (let i = 0; i < 40; i++) {
+  const s = 0.3 + rnd() * 1.1;
+  const r = mesh(new THREE.DodecahedronGeometry(s, 0), toon(rnd() < 0.5 ? 0x8a7a96 : 0xa08f86));
+  r.position.set((rnd() - 0.5) * 18, s * 0.5, -6 - rnd() * 50); r.rotation.set(rnd() * 3, rnd() * 3, rnd() * 3);
+  scene.add(r); rubble.push(r);
+}
+
+// ---------- MONSTER (original design: "Gorrak") ----------
+const monster = new THREE.Group(); scene.add(monster);
+const mSkin = toon(0x6b3fa0), mBelly = toon(0xb58ad6), mDark = toon(0x2e1446);
+const mBody = mesh(new THREE.SphereGeometry(11, 32, 24), mSkin); mBody.scale.set(1.1, 1.25, 0.9); mBody.position.y = 16; monster.add(mBody);
+const belly = mesh(new THREE.SphereGeometry(8, 32, 24), mBelly); belly.scale.set(1, 1.2, 0.6); belly.position.set(0, 14, 6.5); monster.add(belly);
+const mHead = new THREE.Group(); mHead.position.set(0, 29, 2); monster.add(mHead);
+const headBall = mesh(new THREE.SphereGeometry(7, 32, 24), mSkin); headBall.scale.set(1.2, 0.9, 1); mHead.add(headBall);
+for (const sx of [-1, 1]) {
+  const horn = mesh(new THREE.ConeGeometry(1.6, 9, 16), toon(0xffe9c2));
+  horn.position.set(sx * 5.5, 5.5, -0.5); horn.rotation.z = -sx * 0.55; mHead.add(horn);
+}
+const eyeMat = noOutline(new THREE.MeshBasicMaterial({ color: 0xffef5a }));
+for (const ex of [-3, 0, 3]) {
+  const e = new THREE.Mesh(new THREE.SphereGeometry(ex === 0 ? 1.3 : 1.05, 16, 12), eyeMat);
+  e.position.set(ex, ex === 0 ? 2.6 : 1.4, 6.2); mHead.add(e);
+}
+const jaw = new THREE.Group(); jaw.position.set(0, -1.5, 4); mHead.add(jaw);
+const mouth = mesh(new THREE.SphereGeometry(4.2, 24, 16), mDark); mouth.scale.set(1.1, 0.55, 0.6); mouth.position.set(0, -1.2, 2.2); jaw.add(mouth);
+for (let i = -3; i <= 3; i++) {
+  const tooth = mesh(new THREE.ConeGeometry(0.45, 1.4, 8), toon(0xffffff));
+  tooth.position.set(i * 1.1, -0.2, 3.9); tooth.rotation.x = Math.PI; jaw.add(tooth);
+}
+const mArms = [];
+for (const sx of [-1, 1]) {
+  const sh = new THREE.Group(); sh.position.set(sx * 11, 21, 1); monster.add(sh);
+  const arm = mesh(new THREE.CapsuleGeometry(2.6, 12, 8, 16), mSkin); arm.position.y = -7; sh.add(arm);
+  for (let c = -1; c <= 1; c++) {
+    const claw = mesh(new THREE.ConeGeometry(0.7, 2.6, 8), toon(0xffe9c2));
+    claw.position.set(c * 1.3, -15.3, 0.5); claw.rotation.x = Math.PI; sh.add(claw);
+  }
+  sh.rotation.z = sx * 0.5; sh.rotation.x = -0.4; mArms.push(sh);
+}
+for (let i = 0; i < 5; i++) {
+  const sp = mesh(new THREE.ConeGeometry(1.4, 4.5, 8), mDark);
+  sp.position.set(0, 26 - i * 4.5, -8.5 + i * 0.6); sp.rotation.x = -1.2; monster.add(sp);
+}
+monster.position.set(0, 0, -62);
+monster.rotation.y = 0;
+
+// ---------- HERO (channel mascot) ----------
+const hero = new THREE.Group(); scene.add(hero);
+const skin = toon(0xc98a5e), shirt = toon(0xe8262b), jeans = toon(0x27305c), shoe = toon(0xf4f1ea), hair = toon(0x16121c);
+const hips = new THREE.Group(); hips.position.y = 1.35; hero.add(hips);
+const torso = new THREE.Group(); hips.add(torso);
+const chest = mesh(new THREE.CapsuleGeometry(0.52, 0.55, 8, 20), shirt); chest.scale.set(1.15, 1, 0.8); chest.position.y = 0.55; torso.add(chest);
+// emblem: white bolt on the tee
+const boltShape = new THREE.Shape();
+boltShape.moveTo(0.05, 0.28); boltShape.lineTo(-0.16, -0.02); boltShape.lineTo(-0.01, -0.02);
+boltShape.lineTo(-0.08, -0.3); boltShape.lineTo(0.16, 0.04); boltShape.lineTo(0.01, 0.04); boltShape.closePath();
+const bolt = new THREE.Mesh(new THREE.ExtrudeGeometry(boltShape, { depth: 0.04, bevelEnabled: false }), toon(0xffffff));
+bolt.position.set(0, 0.62, 0.43); torso.add(bolt);
+const neck = mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.25, 12), skin); neck.position.y = 1.15; torso.add(neck);
+const head = new THREE.Group(); head.position.y = 1.72; torso.add(head);
+const skull = mesh(new THREE.SphereGeometry(0.56, 32, 24), skin); skull.scale.set(1, 1.05, 0.98); head.add(skull);
+// hair: spiky crest
+const hairCap = mesh(new THREE.SphereGeometry(0.585, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5), hair);
+hairCap.position.y = 0.05; hairCap.rotation.x = -0.25; head.add(hairCap);
+const spikes = [[0, 0.62, -0.05, -0.2, 0], [0.28, 0.55, -0.1, -0.3, -0.5], [-0.28, 0.55, -0.1, -0.3, 0.5],
+  [0.15, 0.5, 0.25, 0.5, -0.2], [-0.15, 0.5, 0.25, 0.5, 0.2], [0, 0.45, -0.4, -0.9, 0], [0.4, 0.35, 0.05, 0, -1.0], [-0.4, 0.35, 0.05, 0, 1.0]];
+for (const [x, y, z, rx, rz] of spikes) {
+  const s = mesh(new THREE.ConeGeometry(0.16, 0.55, 8), hair); s.position.set(x, y, z); s.rotation.set(rx, 0, rz); head.add(s);
+}
+// face (faces +z of head; hero turns to face camera/monster via hero.rotation)
+const eyeW = noOutline(new THREE.MeshBasicMaterial({ color: 0x120a18 }));
+const eyeHi = noOutline(new THREE.MeshBasicMaterial({ color: 0xffffff }));
+const eyes = [];
+for (const sx of [-1, 1]) {
+  const e = new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.12, 4, 12), eyeW); e.position.set(sx * 0.2, 0.02, 0.52); head.add(e); eyes.push(e);
+  const hi = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 8), eyeHi); hi.position.set(sx * 0.2 + 0.025, 0.07, 0.585); head.add(hi);
+  const brow = mesh(new THREE.BoxGeometry(0.2, 0.05, 0.05), hair, false); brow.position.set(sx * 0.21, 0.2, 0.53); brow.rotation.z = sx * -0.28; head.add(brow);
+}
+const mouthH = mesh(new THREE.BoxGeometry(0.16, 0.03, 0.03), toon(0x5a2420), false); mouthH.position.set(0.02, -0.22, 0.53); head.add(mouthH);
+for (const sx of [-1, 1]) { const ear = mesh(new THREE.SphereGeometry(0.11, 12, 8), skin); ear.position.set(sx * 0.55, 0, 0); ear.scale.set(0.6, 1, 0.8); head.add(ear); }
+
+function makeArm(sx) {
+  const shoulder = new THREE.Group(); shoulder.position.set(sx * 0.68, 0.95, 0); torso.add(shoulder);
+  const sleeve = mesh(new THREE.CapsuleGeometry(0.2, 0.25, 6, 14), shirt); sleeve.position.y = -0.2; shoulder.add(sleeve);
+  const upper = mesh(new THREE.CapsuleGeometry(0.15, 0.32, 6, 14), skin); upper.position.y = -0.38; shoulder.add(upper);
+  const elbow = new THREE.Group(); elbow.position.y = -0.62; shoulder.add(elbow);
+  const fore = mesh(new THREE.CapsuleGeometry(0.14, 0.35, 6, 14), skin); fore.position.y = -0.25; elbow.add(fore);
+  const band = mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.1, 14), toon(0x16121c)); band.position.y = -0.42; elbow.add(band);
+  const fist = mesh(new THREE.SphereGeometry(0.2, 16, 12), skin); fist.scale.set(1, 0.9, 1.1); fist.position.y = -0.6; elbow.add(fist);
+  return { shoulder, elbow, fist };
+}
+const armR = makeArm(-1), armL = makeArm(1); // R = hero's right (screen-left when facing camera)
+function makeLeg(sx) {
+  const hip = new THREE.Group(); hip.position.set(sx * 0.26, 0, 0); hips.add(hip);
+  const thigh = mesh(new THREE.CapsuleGeometry(0.2, 0.4, 6, 14), jeans); thigh.position.y = -0.35; hip.add(thigh);
+  const knee = new THREE.Group(); knee.position.y = -0.66; hip.add(knee);
+  const shin = mesh(new THREE.CapsuleGeometry(0.18, 0.35, 6, 14), jeans); shin.position.y = -0.25; knee.add(shin);
+  const foot = mesh(new THREE.BoxGeometry(0.3, 0.2, 0.55), shoe); foot.position.set(0, -0.58, 0.1); knee.add(foot);
+  return { hip, knee };
+}
+const legR = makeLeg(-1), legL = makeLeg(1);
+const hips0 = 1.35;
+hero.position.set(0, 0.0, 0);
+hero.rotation.y = Math.PI; // faces -z (toward the monster)
+
+// fist glow + shockwave
+const glowMat = noOutline(new THREE.MeshBasicMaterial({ color: 0xfff3b0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+const fistGlow = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 12), glowMat); armR.elbow.add(fistGlow); fistGlow.position.y = -0.6;
+const waveMat = noOutline(new THREE.MeshBasicMaterial({ color: 0xfff6d0, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+const wave = new THREE.Mesh(new THREE.TorusGeometry(1, 0.12, 8, 64), waveMat); scene.add(wave);
+const beamMat = noOutline(new THREE.MeshBasicMaterial({ color: 0xfff2c4, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 0.4, 70, 24, 1, true), beamMat);
+beam.rotation.x = Math.PI / 2; beam.position.set(0, 2.2, -36); scene.add(beam);
+
+// embers
+const emberGeo = new THREE.BufferGeometry(); const N = 500; const ep = new Float32Array(N * 3); const eSeed = [];
+for (let i = 0; i < N; i++) { ep[i * 3] = (rnd() - 0.5) * 60; ep[i * 3 + 1] = rnd() * 30; ep[i * 3 + 2] = 15 - rnd() * 90; eSeed.push(rnd()); }
+emberGeo.setAttribute('position', new THREE.BufferAttribute(ep, 3));
+const embers = new THREE.Points(emberGeo, noOutline(new THREE.PointsMaterial({ color: 0xffa64a, size: 0.25, transparent: true, opacity: 0.9, depthWrite: false })));
+scene.add(embers);
+const ep0 = ep.slice();
+
+// flying debris after punch
+const flyers = [];
+for (let i = 0; i < 30; i++) {
+  const s = 0.25 + rnd() * 0.6;
+  const f = mesh(new THREE.BoxGeometry(s, s, s), toon(rnd() < 0.5 ? 0x8a7a96 : 0xd9c3a0));
+  f.visible = false; scene.add(f);
+  flyers.push({ m: f, v: new THREE.Vector3((rnd() - 0.5) * 14, 6 + rnd() * 10, -10 - rnd() * 25), r: new THREE.Vector3(rnd() * 8, rnd() * 8, rnd() * 8) });
+}
+
+// speed lines (svg)
+const svg = document.getElementById('lines');
+let lineMarkup = '';
+for (let i = 0; i < 70; i++) {
+  const a = rnd() * Math.PI * 2, r0 = 170 + rnd() * 140, r1 = 700;
+  const cx = 640, cy = 330, w = 2 + rnd() * 7;
+  lineMarkup += `<line x1="${cx + Math.cos(a) * r0}" y1="${cy + Math.sin(a) * r0}" x2="${cx + Math.cos(a) * r1}" y2="${cy + Math.sin(a) * r1}" stroke="white" stroke-width="${w}" stroke-linecap="round" opacity="${0.5 + rnd() * 0.5}"/>`;
+}
+svg.innerHTML = lineMarkup;
+
+const $ = (id) => document.getElementById(id);
+const cap1 = $('cap1'), cap2 = $('cap2'), titleEl = $('title'), flash = $('flash'), lines = $('lines');
+
+// ---------- animation ----------
+function pose(t) {
+  // idle breathing + stance
+  const breathe = Math.sin(t * 4) * 0.02;
+  hips.position.y = hips0 + breathe - 0.08;
+  legR.hip.rotation.set(0.25, 0, -0.12); legR.knee.rotation.x = 0.3;
+  legL.hip.rotation.set(-0.35, 0, 0.12); legL.knee.rotation.x = 0.35;
+  head.rotation.set(0, 0, 0); torso.rotation.set(0, 0, 0);
+
+  // wind-up 1.3-2.55, punch 2.55-2.75, hold after
+  const wind = smooth(1.3, 2.3, t), hit = smooth(2.55, 2.72, t);
+  torso.rotation.y = lerp(0, 0.55, wind) * (1 - hit) + (-0.45) * hit;
+  torso.rotation.x = 0.08 * wind;
+  armR.shoulder.rotation.set(lerp(-0.15, 0.6, wind) * (1 - hit) + (-1.62) * hit, 0, lerp(-0.15, -0.25, wind) * (1 - hit));
+  armR.elbow.rotation.x = lerp(-0.3, -2.0, wind) * (1 - hit);
+  armL.shoulder.rotation.set(lerp(-0.2, -1.0, wind) * (1 - hit) + 0.5 * hit, 0, lerp(0.15, 0.35, wind));
+  armL.elbow.rotation.x = lerp(-0.3, -1.5, wind) * (1 - hit) + (-0.6) * hit;
+  hips.position.z = 0.25 * hit;
+  // determined squint during wind-up
+  const squint = lerp(1, 0.55, wind);
+  for (const e of eyes) e.scale.y = squint;
+  // hair/emblem flutter from wind
+  head.rotation.z = Math.sin(t * 9) * 0.015;
+  head.rotation.y = -torso.rotation.y * 0.85;
+}
+
+function cameraAt(t) {
+  let pos, look, fov = 42;
+  if (t < 1.25) { // A: low wide behind hero, push in; monster roars
+    const k = smooth(0, 1.25, t);
+    pos = new THREE.Vector3(lerp(7.5, 5.5, k), lerp(1.2, 1.6, k), lerp(11, 8, k));
+    look = new THREE.Vector3(0, lerp(12, 14, k), -50);
+  } else if (t < 2.55) { // B: hero face, slow push
+    const k = smooth(1.25, 2.55, t);
+    pos = new THREE.Vector3(lerp(1.9, 1.3, k), lerp(2.6, 2.9, k), lerp(-5.6, -4.3, k));
+    look = new THREE.Vector3(0.15, 2.45, 0); fov = lerp(40, 33, k);
+  } else if (t < 3.05) { // C: punch impact, close & dutch
+    const k = smooth(2.55, 3.05, t);
+    pos = new THREE.Vector3(lerp(-2.2, -2.6, k), 2.4, lerp(-3.6, -4.4, k));
+    look = new THREE.Vector3(0, 2.4, -1.5); fov = lerp(48, 56, k);
+  } else { // D: wide behind hero, monster blasted away
+    const k = smooth(3.05, 4.0, t);
+    pos = new THREE.Vector3(lerp(1.5, 0.5, k), lerp(2.5, 3.5, k), lerp(9, 13, k));
+    look = new THREE.Vector3(0, lerp(10, 16, k), -50); fov = 46;
+  }
+  // impact shake
+  const shake = Math.exp(-Math.max(0, t - 2.62) * 6) * (t > 2.62 ? 1 : 0);
+  pos.x += Math.sin(t * 90) * 0.18 * shake; pos.y += Math.cos(t * 77) * 0.14 * shake;
+  camera.position.copy(pos); camera.fov = fov; camera.updateProjectionMatrix(); camera.lookAt(look);
+  if (t >= 2.55 && t < 3.05) camera.rotateZ(-0.12);
+}
+
+function monsterAt(t) {
+  const roar = smooth(0.2, 0.7, t) * (1 - smooth(1.6, 2.2, t));
+  jaw.rotation.x = 0.35 * roar + Math.sin(t * 30) * 0.03 * roar;
+  mHead.rotation.x = -0.25 * roar;
+  mArms[0].rotation.z = -0.5 - 0.5 * roar; mArms[1].rotation.z = 0.5 + 0.5 * roar;
+  const idle = Math.sin(t * 2.2) * 0.4;
+  monster.position.set(0, idle, -62);
+  monster.rotation.set(0, 0, 0);
+  // blasted after punch reaches it (~3.0s)
+  const b = clamp((t - 2.95) / 1.05);
+  if (b > 0) {
+    const e = 1 - Math.pow(1 - b, 2);
+    monster.position.set(e * 6, idle + e * 26, -62 - e * 28);
+    monster.rotation.set(-e * 1.1, e * 0.5, e * 1.2);
+  }
+}
+
+window.renderFrame = (t) => {
+  pose(t); cameraAt(t); monsterAt(t);
+
+  // embers drift
+  for (let i = 0; i < N; i++) {
+    const s = eSeed[i];
+    ep[i * 3 + 1] = (ep0[i * 3 + 1] + t * (1.5 + s * 2)) % 30;
+    ep[i * 3] = ep0[i * 3] + Math.sin(t * (1 + s) + s * 10) * 0.8;
+  }
+  emberGeo.attributes.position.needsUpdate = true;
+
+  // fist charge glow + light
+  const charge = smooth(1.7, 2.5, t) * (1 - smooth(2.85, 3.2, t));
+  glowMat.opacity = 0.75 * charge; fistGlow.scale.setScalar(1 + charge * 0.6 + Math.sin(t * 50) * 0.08 * charge);
+  const fw = new THREE.Vector3(); armR.fist.getWorldPosition(fw);
+  fistLight.position.copy(fw); fistLight.intensity = 8 * charge;
+
+  // shockwave & beam
+  const w = clamp((t - 2.62) / 0.9);
+  wave.position.set(0, 2.3, -1.5 - w * 40); wave.scale.setScalar(1 + w * 22);
+  waveMat.opacity = w > 0 ? 0.9 * (1 - w) : 0;
+  const bm = clamp((t - 2.62) / 0.25) * (1 - smooth(3.3, 4.0, t));
+  beamMat.opacity = 0.55 * bm; beam.scale.set(1 + bm * 0.6, bm, 1 + bm * 0.6);
+
+  // sky clears where the punch went
+  skyMat.uniforms.clear.value = smooth(2.8, 3.8, t);
+  scene.fog.color.set(0xe9866a).lerp(new THREE.Color(0xf4c9a0), smooth(2.9, 3.9, t));
+
+  // debris
+  const fd = Math.max(0, t - 2.65);
+  for (const f of flyers) {
+    f.m.visible = t > 2.65;
+    f.m.position.set(f.v.x * fd, 0.5 + f.v.y * fd - 9.8 * fd * fd * 0.6, -2 + f.v.z * fd);
+    f.m.rotation.set(f.r.x * fd, f.r.y * fd, f.r.z * fd);
+  }
+  for (let i = 0; i < rubble.length; i++) {
+    const r = rubble[i]; const lift = smooth(2.75 + i * 0.008, 3.4, t);
+    r.position.y = (0.3 + (i % 5) * 0.2) * 0.5 + lift * (2 + (i % 7)) * (1 - smooth(3.4, 4.2, t) * 0.5);
+  }
+
+  effect.render(scene, camera);
+
+  // overlays
+  const c1in = easeOutBack(clamp((t - 0.1) / 0.3));
+  cap1.style.opacity = t < 1.25 ? clamp((t - 0.1) / 0.15) : 0;
+  cap1.style.transform = `scale(${0.6 + 0.4 * c1in})`;
+  const c2in = easeOutBack(clamp((t - 1.3) / 0.3));
+  cap2.style.opacity = (t >= 1.3 && t < 2.6) ? clamp((t - 1.3) / 0.15) : 0;
+  cap2.style.transform = `scale(${0.6 + 0.4 * c2in})`;
+  flash.style.opacity = t > 2.6 ? Math.max(0, 1 - (t - 2.6) / 0.22) : 0;
+  lines.style.opacity = (t > 2.5 && t < 3.05) ? 1 - smooth(2.85, 3.05, t) : 0;
+  lines.style.transform = `scale(${1 + (t % 0.1) * 0.6}) rotate(${(Math.floor(t * 30) % 3) * 2}deg)`;
+  const ti = easeOutBack(clamp((t - 3.25) / 0.35));
+  titleEl.style.opacity = clamp((t - 3.25) / 0.12);
+  titleEl.style.transform = `scale(${0.5 + 0.5 * ti})`;
+  return true;
+};
+window.sceneReady = true;
+window.renderFrame(0);
+</script>
+</body>
+</html>
