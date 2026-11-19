@@ -6,7 +6,12 @@ Inspired by viral Roblox "In this town..." POV videos, but long-form (20–30 mi
 - World has an anime-style vibe (inspired by popular anime/web-novel tropes), but story, characters,
   names, places, power system and twists are OUR OWN. Not a renamed copy of any anime's plot or world.
 - Same video format as below (hook → subscribe → acts → value points → "agla world kaun sa?").
-- Visual references from the owner: pending.
+- **Script opening rule:** start with a "What happens if you..." hook. Reveal NOTHING at the start
+  (no source, no ending, no big twist). Subscribe ask right after the hook.
+- **Visual direction:** 3D backgrounds + 3D characters, Roblox-story-video feel (owner's reference:
+  https://youtu.be/FXJO5fIHidQ — could not be opened from the cloud session; screenshots needed).
+  Plan: our own low-poly / blocky 3D characters (not Roblox avatars) in stylized 3D worlds,
+  built with three.js + Remotion.
 
 ---
 
