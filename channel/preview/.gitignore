@@ -2,3 +2,5 @@ node_modules/
 frames/
 stills/
 audio/*.wav
+frames10/
+render10.log

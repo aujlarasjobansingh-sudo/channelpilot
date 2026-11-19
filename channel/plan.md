@@ -6,6 +6,12 @@ Inspired by viral Roblox "In this town..." POV videos, but long-form (20–30 mi
 - World has an anime-style vibe (inspired by popular anime/web-novel tropes), but story, characters,
   names, places, power system and twists are OUR OWN. Not a renamed copy of any anime's plot or world.
 - Same video format as below (hook → subscribe → acts → value points → "agla world kaun sa?").
+- **Language:** videos and scripts in ENGLISH (owner gives instructions in Hindi).
+- **No subtitles/captions.** On-screen text only for key moments (e.g. the "IN THIS WORLD" title), clean premium typography.
+- **Voice:** ElevenLabs only for the final full video. Previews: no paid voice.
+- **Quality bar:** premium, not low-effort: rich saturated lighting, depth, bloom, AO, DOF, color grade, detailed world.
+- **Hero mascot:** red t-shirt with white bolt, black spiky hair, blue jeans, white shoes (owner approved the look).
+- **First world:** superhero city with monster attacks (One Punch Man *vibe* only; own names, ranks, monsters).
 - **Script opening rule:** start with a "What happens if you..." hook. Reveal NOTHING at the start
   (no source, no ending, no big twist). Subscribe ask right after the hook.
 - **Visual direction:** 3D backgrounds + 3D characters, Roblox-story-video feel (owner's reference:
