@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>EP01 Part 1</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+  #stage { position: relative; width: 1280px; height: 720px; overflow: hidden; font-family: "Inter Display", "Inter", sans-serif; }
+  canvas { display: block; }
+  #title { position: absolute; left: 0; right: 0; top: 280px; text-align: center; opacity: 0; }
+  #title .main { font-weight: 900; font-size: 100px; color: #fff; letter-spacing: 0.12em; line-height: 1;
+    text-shadow: 0 0 34px rgba(255,140,70,0.55), 0 8px 28px rgba(0,0,0,0.55); }
+  #title .main span { color: #ff3a2e; text-shadow: 0 0 40px rgba(255,50,30,0.75), 0 8px 28px rgba(0,0,0,0.55); }
+  #title .bar { margin: 22px auto 0; height: 4px; width: 0; background: linear-gradient(90deg, rgba(255,58,46,0), #ff3a2e, rgba(255,58,46,0)); }
+  .chip { position: absolute; opacity: 0; transform: translate(-50%, 0); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chip .name { font-weight: 900; font-size: 46px; letter-spacing: 0.18em; color: #fff; text-shadow: 0 4px 24px rgba(0,0,0,0.7); }
+  .chip .line { height: 3px; width: 140px; border-radius: 2px; }
+  .chip .lvl { font-weight: 700; font-size: 16px; letter-spacing: 0.35em; color: rgba(255,255,255,0.65); }
+  #black { position: absolute; inset: 0; background: #000; opacity: 0; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "/preview/node_modules/three/build/three.module.js",
+  "three/addons/": "/preview/node_modules/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="stage">
+  <div class="chip" id="chip"><div class="lvl" id="chipLvl">THREAT LEVEL 1</div><div class="name" id="chipName">EMBER</div><div class="line" id="chipLine"></div></div>
+  <div id="title"><div class="main">IN THIS <span>WORLD</span></div><div class="bar"></div></div>
+  <div id="black"></div>
+</div>
+<script type="module" src="./main.js"></script>
+</body>
+</html>
