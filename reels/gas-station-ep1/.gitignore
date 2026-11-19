@@ -1,3 +1,7 @@
 node_modules/
 out/frames/
 out/still_*.png
+out/dbg_*.png
+out/logs/
+out/*.wav
+voices_models/
