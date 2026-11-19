@@ -1,4 +1,16 @@
-# Channel Plan — Anime / Web Novel Story Explainer (2D animated)
+# Channel Plan
+
+## CURRENT CONCEPT (Nov 19, 2026): "In This World..." long stories
+Inspired by viral Roblox "In this town..." POV videos, but long-form (20–30 min) and 2D animated.
+- Second-person narration: "In this world, har insaan ke paas ek power hoti hai... lekin tumhare paas nahi."
+- World has an anime-style vibe (inspired by popular anime/web-novel tropes), but story, characters,
+  names, places, power system and twists are OUR OWN. Not a renamed copy of any anime's plot or world.
+- Same video format as below (hook → subscribe → acts → value points → "agla world kaun sa?").
+- Visual references from the owner: pending.
+
+---
+
+# Earlier plan — Anime / Web Novel Story Explainer (2D animated)
 
 Status: niche = anime-style novels (web novels, light novels, Chinese/Korean novels).
 First topic and style not final yet (Nov 19, 2026).
