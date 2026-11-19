@@ -5,3 +5,4 @@ vo_test/
 shots/
 out/vo_full.wav
 scripts/__pycache__/
+out/music.wav
