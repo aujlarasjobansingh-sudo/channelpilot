@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:Rubik;font-weight:900;src:url(node_modules/@fontsource/rubik/files/rubik-latin-900-normal.woff2)}
+@font-face{font-family:Rubik;font-weight:800;src:url(node_modules/@fontsource/rubik/files/rubik-latin-800-normal.woff2)}
+html,body{margin:0;background:transparent}
+.v{display:none}
+</style></head><body>
+<!-- SQUARE profile logo (1080) -->
+<svg id="square" class="v" width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%"><stop offset="0" stop-color="#26324d"/><stop offset="1" stop-color="#0c1018"/></radialGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="90"/></filter>
+    <linearGradient id="lens" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9e2f0"/></linearGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#bg)"/>
+  <!-- red/blue light glow, nod to the police lights -->
+  <circle cx="250" cy="300" r="260" fill="#e2372f" opacity="0.32" filter="url(#soft)"/><circle cx="840" cy="300" r="260" fill="#2f6bff" opacity="0.34" filter="url(#soft)"/>
+  <!-- rain streaks -->
+  <g stroke="#9fb3d1" stroke-width="5" stroke-linecap="round" opacity="0.18">
+    <line x1="120" y1="80" x2="140" y2="190"/><line x1="300" y1="40" x2="320" y2="150"/><line x1="820" y1="70" x2="840" y2="180"/>
+    <line x1="960" y1="300" x2="980" y2="410"/><line x1="90" y1="760" x2="110" y2="870"/><line x1="980" y1="780" x2="1000" y2="890"/>
+  </g>
+  <g transform="translate(540 470)" font-family="Rubik" font-weight="900" text-anchor="middle">
+    <!-- P   [eye]   V  -->
+    <text x="-255" y="95" font-size="330" fill="#f5d23a" stroke="#0b0c10" stroke-width="26" paint-order="stroke" stroke-linejoin="round">P</text>
+    <text x="255" y="95" font-size="330" fill="#f5d23a" stroke="#0b0c10" stroke-width="26" paint-order="stroke" stroke-linejoin="round">V</text>
+    <!-- the O is an eye / camera lens: first-person POV -->
+    <circle r="128" fill="url(#lens)" stroke="#0b0c10" stroke-width="26"/>
+    <circle r="62" fill="#14161d"/>
+    <circle r="62" fill="none" stroke="#e2372f" stroke-width="10"/>
+    <circle cx="22" cy="-24" r="17" fill="#ffffff"/>
+    <!-- red X badge -->
+    <g transform="translate(150 -150) rotate(-8)">
+      <rect x="-78" y="-78" width="156" height="156" rx="34" fill="#e2372f" stroke="#0b0c10" stroke-width="18"/>
+      <text y="52" font-size="150" fill="#ffffff" stroke="#0b0c10" stroke-width="12" paint-order="stroke">X</text>
+    </g>
+  </g>
+  <!-- OFFICIAL bar -->
+  <g transform="translate(540 760)">
+    <rect x="-280" y="-62" width="560" height="124" rx="30" fill="#ffffff" stroke="#0b0c10" stroke-width="16"/>
+    <text y="34" font-family="Rubik" font-weight="900" font-size="88" letter-spacing="12" text-anchor="middle" fill="#0b0c10">OFFICIAL</text>
+  </g>
+</svg>
+<!-- WATERMARK for video corner (transparent) -->
+<svg id="wm" class="v" width="700" height="300" viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg">
+  <g font-family="Rubik" font-weight="900">
+    <g transform="translate(150 150)">
+      <circle r="112" fill="#ffffff" stroke="#0b0c10" stroke-width="22"/><circle r="54" fill="#14161d"/>
+      <circle r="54" fill="none" stroke="#e2372f" stroke-width="9"/><circle cx="20" cy="-21" r="15" fill="#fff"/>
+    </g>
+    <text x="290" y="168" font-size="150" fill="#f5d23a" stroke="#0b0c10" stroke-width="22" paint-order="stroke" stroke-linejoin="round">pov<tspan fill="#e2372f">X</tspan></text>
+    <text x="296" y="246" font-size="58" letter-spacing="10" fill="#ffffff" stroke="#0b0c10" stroke-width="12" paint-order="stroke">OFFICIAL</text>
+  </g>
+</svg>
+<script>document.fonts.load('900 40px Rubik').then(()=>document.fonts.load('800 40px Rubik')).then(()=>window.ready=true)</script>
+</body></html>
