@@ -1,0 +1,40 @@
+t=0.03  centre dx=  0.00 dy=  0.00 | desk dx= -0.00 dy=  0.00 | cum     0.0     0.0
+t=0.13  centre dx=  0.00 dy=  0.00 | desk dx=  0.00 dy=  0.00 | cum     0.0     0.0
+t=0.23  centre dx=  0.00 dy=  0.00 | desk dx=  0.00 dy=  0.00 | cum     0.0     0.0
+t=0.33  centre dx=  1.85 dy= -0.01 | desk dx=  1.48 dy=  0.10 | cum     2.2    -0.0
+t=0.43  centre dx=  6.47 dy=  0.01 | desk dx=  5.16 dy=  0.33 | cum    17.2     0.0
+t=0.53  centre dx=  9.54 dy=  1.00 | desk dx=  7.67 dy=  1.79 | cum    43.1     2.0
+t=0.63  centre dx= 10.52 dy=  1.69 | desk dx=  8.60 dy=  2.91 | cum    74.3     6.4
+t=0.73  centre dx=  9.02 dy=  1.77 | desk dx=  7.51 dy=  3.10 | cum   103.4    11.7
+t=0.83  centre dx=  5.47 dy=  1.30 | desk dx=  4.62 dy=  2.18 | cum   123.7    16.2
+t=0.93  centre dx=  0.68 dy=  0.39 | desk dx=  0.60 dy=  0.54 | cum   130.6    18.3
+t=1.03  centre dx=  0.00 dy=  0.00 | desk dx=  0.00 dy=  0.00 | cum   130.6    18.3
+t=1.13  centre dx=  0.00 dy=  0.00 | desk dx=  0.00 dy=  0.00 | cum   130.6    18.3
+t=1.23  centre dx=  0.00 dy=  0.00 | desk dx=  0.00 dy=  0.00 | cum   130.6    18.3
+t=1.33  centre dx=  0.00 dy=  0.00 | desk dx=  0.00 dy=  0.00 | cum   130.6    18.3
+t=1.43  centre dx=  0.00 dy=  0.00 | desk dx=  0.00 dy=  0.00 | cum   130.6    18.3
+t=1.53  centre dx=  0.08 dy=  0.00 | desk dx=  0.09 dy=  0.01 | cum   130.7    18.3
+t=1.63  centre dx=  0.15 dy= -0.00 | desk dx=  0.12 dy=  0.02 | cum   131.1    18.3
+t=1.73  centre dx=  0.26 dy= -0.00 | desk dx=  0.22 dy=  0.03 | cum   131.8    18.3
+t=1.83  centre dx=  0.33 dy= -0.00 | desk dx=  0.27 dy=  0.05 | cum   132.7    18.3
+t=1.93  centre dx=  0.39 dy= -0.00 | desk dx=  0.34 dy=  0.06 | cum   133.8    18.3
+t=2.03  centre dx=  0.45 dy= -0.00 | desk dx=  0.38 dy=  0.06 | cum   135.1    18.3
+t=2.13  centre dx=  0.49 dy= -0.01 | desk dx=  0.43 dy=  0.08 | cum   136.6    18.3
+t=2.23  centre dx=  0.54 dy= -0.01 | desk dx=  0.45 dy=  0.08 | cum   138.2    18.3
+t=2.33  centre dx=  0.57 dy=  0.00 | desk dx=  0.48 dy=  0.09 | cum   139.8    18.3
+t=2.43  centre dx=  0.57 dy=  0.00 | desk dx=  0.49 dy=  0.08 | cum   141.6    18.3
+t=2.53  centre dx= -3.02 dy=-10.77 | desk dx= -3.80 dy=-12.73 | cum   139.2     5.8
+t=2.63  centre dx=-10.21 dy=-35.61 | desk dx=-10.96 dy=-40.50 | cum   115.4   -78.3
+t=2.73  centre dx=-13.63 dy=-48.43 | desk dx=-11.55 dy=-51.18 | cum    76.9  -214.2
+t=2.83  centre dx=-12.22 dy=-43.81 | desk dx= -7.77 dy=-46.03 | cum    36.9  -355.9
+t=2.93  centre dx= -4.42 dy=-22.81 | desk dx= -3.26 dy=-24.67 | cum    15.1  -448.1
+t=3.03  centre dx= -0.01 dy=  0.23 | desk dx=  0.00 dy=  0.00 | cum    11.6  -466.1
+t=3.13  centre dx= -0.08 dy=  0.02 | desk dx=  0.00 dy=  0.00 | cum    11.4  -466.0
+t=3.23  centre dx= -0.12 dy=  0.03 | desk dx=  0.00 dy=  0.00 | cum    11.1  -466.0
+t=3.33  centre dx= -0.20 dy=  0.04 | desk dx=  0.00 dy=  0.00 | cum    10.5  -465.9
+t=3.43  centre dx= -0.24 dy=  0.05 | desk dx=  0.00 dy=  0.00 | cum     9.9  -465.7
+t=3.53  centre dx= -0.30 dy=  0.07 | desk dx=  0.00 dy=  0.00 | cum     9.0  -465.5
+t=3.63  centre dx= -0.32 dy=  0.06 | desk dx=  0.00 dy=  0.00 | cum     8.1  -465.3
+t=3.73  centre dx= -0.37 dy=  0.09 | desk dx=  0.00 dy=  0.00 | cum     7.0  -465.1
+t=3.83  centre dx= -0.41 dy=  0.10 | desk dx=  0.00 dy=  0.00 | cum     5.8  -464.8
+t=3.93  centre dx= -0.43 dy=  0.09 | desk dx=  0.00 dy=  0.00 | cum     4.6  -464.5
