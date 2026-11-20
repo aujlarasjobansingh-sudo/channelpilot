@@ -101,6 +101,24 @@ def _sat(s, contrast, lift):
     return out + [0, 0, 0, 1, 0]
 GRADE_CF = skia.ColorFilters.Matrix(_sat(1.02, 0.98, 0.012))
 THRESH_CF = skia.ColorFilters.Matrix([1.7,0,0,0,-0.78, 0,1.7,0,0,-0.78, 0,0,1.7,0,-0.78, 0,0,0,1,0])
+_rng = np.random.default_rng(7); GRAIN = []
+for _ in range(4):
+    g = (_rng.normal(128, 40, (H // 2, W // 2))).clip(0, 255).astype(np.uint8)
+    GRAIN.append(skia.Image.fromarray(np.dstack([g, g, g, np.full_like(g, 255)]), colorType=skia.kRGBA_8888_ColorType))
+def grain(c, t, a=0.07):
+    p = skia.Paint(); p.setBlendMode(skia.BlendMode.kOverlay); p.setAlphaf(a)
+    c.drawImageRect(GRAIN[int(t * FPS) % 4], skia.Rect(0, 0, W, H), skia.SamplingOptions(), p)
+IMPACT_CF = skia.ColorFilters.Matrix([-2.6*.2126, -2.6*.7152, -2.6*.0722, 0, 1.55, -2.9*.2126, -2.9*.7152, -2.9*.0722, 0, 1.45, -2.9*.2126, -2.9*.7152, -2.9*.0722, 0, 1.4, 0, 0, 0, 1, 0])
+def impact(surf):  # anime impact frame: inverted, high-contrast
+    c = surf.getCanvas(); img = surf.makeImageSnapshot(); p = skia.Paint(); p.setColorFilter(IMPACT_CF); c.drawImage(img, 0, 0, skia.SamplingOptions(), p)
+def puff(c, x, y, r, seed, col_='#D9D3E6', shade='#A79FBF', a=255, outline=True):
+    rr = __import__('random').Random(seed); p = skia.Path(); p.addCircle(x, y, r)
+    for i in range(6):
+        ang = rr.uniform(0, 6.28); d = r * rr.uniform(.5, .9); q = skia.Path(); q.addCircle(x + math.cos(ang) * d, y + math.sin(ang) * d * .7, r * rr.uniform(.45, .75)); p = skia.Op(p, q, skia.PathOp.kUnion_PathOp)
+    c.save(); c.saveLayerAlpha(None, int(a)); c.drawPath(p, fp(col_)); c.clipPath(p, doAntiAlias=True)
+    o = skia.Path(p); o.offset(-r * .18, -r * .22); c.drawPath(skia.Op(p, o, skia.PathOp.kDifference_PathOp), fp(shade)); c.restore()
+    if outline: c.drawPath(p, ink(LW * .9, INK, a))
+    c.restore()
 def finish(surf, bloom=0.40, sigma=20):
     c = surf.getCanvas(); img = surf.makeImageSnapshot(); c.clear(C((0, 0, 0)))
     p = skia.Paint(); p.setColorFilter(GRADE_CF); c.drawImage(img, 0, 0, skia.SamplingOptions(), p)
@@ -153,9 +171,10 @@ def _hair_front(c, spec, R, lw, face, light):
         d = 1 if face >= 0 else -1; poly(c, [(d * 10, -46), (d * (R + 60), -40), (d * (R + 56), -26), (d * 6, -32)], spec.get('cap_col', '#2E6B4E'), lw)
 
 def draw_char(c, x, y, s, spec, face=0.0, eyes='dot', mouth='smile', brow=0.0, brow_tilt=0.0, arms=('down', 'down'),
-              tilt=0.0, bob=0.0, squash=0.0, sweat=-1.0, light=-1, rim=None, legs=None, pupil=0.0, sparkle=0.0, lean=0.0):
+              tilt=0.0, bob=0.0, squash=0.0, sweat=-1.0, light=-1, rim=None, legs=None, pupil=0.0, sparkle=0.0, lean=0.0, shadow=True, blush=0.0, gloom=0.0):
     lw = max(5.2, 4.0 / s); R = HEAD_R
     c.save(); c.translate(x, y); c.scale(s, s)
+    if shadow: c.drawOval(skia.Rect(-120, -16, 120, 16), fp((8, 8, 20), 90, blur=10))
     jeans = spec.get('jeans')
     for (hx0, fx, lift) in (legs or ((-26, 0, 0), (26, 0, 0))):
         if jeans:
@@ -193,15 +212,21 @@ def draw_char(c, x, y, s, spec, face=0.0, eyes='dot', mouth='smile', brow=0.0, b
                 r_ = 16 if i % 2 == 0 else 7; a = -math.pi / 2 + i * math.pi / 5; (st.moveTo if i == 0 else st.lineTo)(sx_ + r_ * math.cos(a), sy_ + r_ * math.sin(a))
             st.close(); shape(c, st, spec['star'], lw * .5)
     c.restore(); c.drawPath(body, ink(lw))
+    sleeve_col = spec['suit']; full = not spec.get('tee')
     for side, a in ((-1, arms[0]), (1, arms[1])):
         e, h, show = _arm(a); m = 1 if side < 0 else -1
         sx, sy = SHOULDER[0] * m, SHOULDER[1]; ex, ey, hx_, hy_ = e[0] * m, e[1], h[0] * m, h[1]
-        ap = skia.Path(); ap.moveTo(sx, sy); ap.quadTo(1.35*ex - .175*(sx+hx_), 1.35*ey - .175*(sy+hy_), hx_, hy_); c.drawPath(ap, ink(lw))
+        ap = skia.Path(); ap.moveTo(sx, sy); ap.quadTo(1.35*ex - .175*(sx+hx_), 1.35*ey - .175*(sy+hy_), hx_, hy_)
+        meas = skia.PathMeasure(ap, False); L = meas.getLength()
+        upper = skia.Path(); meas.getSegment(0, L * (0.98 if full else .38), upper, True)
+        c.drawPath(ap, ink(27, boil=False)); c.drawPath(ap, ink(16, spec['skin'], boil=False))
+        c.save(); c.clipPath(body, skia.ClipOp.kDifference, True); c.drawPath(upper, ink(36, boil=False)); c.restore()
+        c.drawPath(upper, ink(25, sleeve_col, boil=False))
         if show:
             if spec.get('band'):
-                dx, dy = hx_ - ex, hy_ - ey; L = math.hypot(dx, dy) or 1
-                bx, by = hx_ - dx / L * 22, hy_ - dy / L * 22; circ(c, bx, by, 12, spec['band'], lw * .7)
-            circ(c, hx_, hy_, 14, spec.get('glove', spec['skin']), lw * .8)
+                bx, by = meas.getPosTan(L * .86)[0]; circ(c, bx, by, 15, spec['band'], lw * .7)
+            circ(c, hx_, hy_, 19, spec.get('glove', spec['skin']), lw * .8)
+            c.drawCircle(hx_ - 5, hy_ - 6, 5, fp((255, 255, 255), 70))
     c.save(); c.translate(0, HEAD_CY); c.rotate(tilt)
     _hair_back(c, spec, R, lw)
     head = skia.Path(); head.addCircle(0, 0, R)
@@ -223,14 +248,24 @@ def draw_char(c, x, y, s, spec, face=0.0, eyes='dot', mouth='smile', brow=0.0, b
         elif eyes == 'half':
             c.save(); c.clipRect(skia.Rect(ex - 20, eyy - 3, ex + 20, eyy + 20)); c.drawOval(skia.Rect(ex - 6.5*sq, eyy - 9, ex + 6.5*sq, eyy + 9), fp(INK)); c.restore()
             c.drawLine(ex - 13*sq, eyy - 4, ex + 13*sq, eyy - 4, ink(lw * .8))
+        elif eyes == 'shock':
+            oval(c, ex - 20*sq, eyy - 22, ex + 20*sq, eyy + 22, '#FBFBF7', lw * .7); c.drawCircle(ex, eyy, 3.2, fp(INK))
         else:
-            c.drawOval(skia.Rect(ex - 5.5*sq + pupil*3, eyy - 8, ex + 5.5*sq + pupil*3, eyy + 8), fp(INK)); c.drawCircle(ex + 1.5 + pupil*3, eyy - 3, 1.8, fp((255, 255, 255), 220))
+            px = ex + pupil * 3
+            c.drawOval(skia.Rect(px - 7.5*sq, eyy - 11, px + 7.5*sq, eyy + 11), fp(INK))
+            c.drawCircle(px + 2.5, eyy - 4.5, 3.0, fp((255, 255, 255), 235)); c.drawCircle(px - 2.5, eyy + 4.5, 1.4, fp((255, 255, 255), 160))
         inner = 1 if ex0 < 0 else -1; by = eyy - 30 - brow * 9
         c.drawLine(ex - 13*sq, by + (brow_tilt*7 if inner < 0 else -brow_tilt*7), ex + 13*sq, by + (brow_tilt*7 if inner > 0 else -brow_tilt*7), ink(lw * .78))
     if spec.get('glasses'):
         for ex0 in (-30, 30):
             ex = ex0 + fx; g = skia.Path(); g.addOval(skia.Rect(ex - 23, eyy - 23, ex + 23, eyy + 23)); c.drawPath(g, fp((225, 240, 255), 55)); c.drawPath(g, ink(lw * .7))
         c.drawLine(fx - 7, eyy - 3, fx + 7, eyy - 3, ink(lw * .7))
+    if blush > 0:
+        for ex0 in (-48, 48): c.drawOval(skia.Rect(ex0 + fx * .8 - 17, 20, ex0 + fx * .8 + 17, 32), fp('#F07A7A', 110 * blush, blur=3))
+    if gloom > 0:
+        c.save(); hd = skia.Path(); hd.addCircle(0, 0, R - 3); c.clipPath(hd, doAntiAlias=True)
+        for i in range(9): c.drawLine(-70 + i * 17, -44, -70 + i * 17, -44 + 40 * gloom + (i % 3) * 8, ink(4, '#4A5FC8', 200, boil=False))
+        c.restore()
     mx, my = face * 34, 44
     if mouth == 'smile': m = skia.Path(); m.moveTo(mx - 17, my - 2); m.quadTo(mx, my + 13, mx + 17, my - 2); c.drawPath(m, ink(lw * .8))
     elif mouth == 'grin':
