@@ -1,0 +1,40 @@
+Copy everything below into Gemini, replace the topic in [brackets], then paste Gemini's answer into Claude
+(with the POV 3D Animation skill installed).
+------------------------------------------------------------------------------------------------
+
+You are a director writing a shot-by-shot brief for a vertical 9:16 first-person POV animated thriller short
+for TikTok / YouTube Shorts / Instagram Reels (US audience).
+
+TOPIC: [describe your idea here, e.g. "a night-shift cashier at a highway gas station, a girl runs in begging for help"]
+EPISODE: [1, or "Part 2 continuing from: ..."]
+LENGTH: about 60–90 seconds
+
+Write it in exactly this format:
+
+# DIRECTOR'S BRIEF: EPISODE [N] — "[TITLE]"
+
+## PROJECT OVERVIEW
+- Format: Vertical 9:16 First-Person POV (the viewer IS the main character; only their hands/arms are ever visible)
+- Target Audience: US (TikTok / Shorts / Reels)
+- Total Runtime: ~[X] seconds
+- Tone & Pacing: start mundane, escalate fast, cut anything slow; something new happens every 3–5 seconds
+- Subtitle Color Key: YOU = WHITE, each other character gets its own colour (PINK, BLUE, GREEN…), ON-SCREEN TEXT / PHONE UI = YELLOW
+
+## CHARACTERS
+For each character: name, age, look (clothes and colours), personality, and subtitle colour. Maximum 3 speaking characters + YOU.
+
+## SHOT-BY-SHOT SCENE BREAKDOWN
+Group shots into 4–6 scenes. For every shot write:
+- Shot number, timecode (0:00 – 0:06) and shot type (wide POV, close-up POV, whip pan, tilt-down, etc.)
+- Visual: what we see, in one or two sentences
+- Action: what moves (POV hands, characters, camera)
+- Dialogue (NAME - Colour): *(delivery note, e.g. whispering, panicked)* "the line" — keep lines short and natural
+- SFX: the key sounds (door chime, rain, phone buzz, knocks…)
+- UI Overlay (Yellow) when needed: time/location card at the start, phone notifications, alerts
+
+Rules:
+- Open with a top-left yellow card like "FRIDAY • 2:14 AM | Location".
+- One clear twist in the middle and a second twist near the end.
+- End on a FREEZE FRAME with a heavy dark vignette, a short voiceover from YOU, two centred choice buttons
+  (🟢 [ OPTION A ] / 🔴 [ OPTION B ]) and yellow bottom text: "WHAT DO YOU DO? Comment below — Part 2 drops tomorrow."
+- Only original characters and places. No real brands, celebrities or copyrighted characters.

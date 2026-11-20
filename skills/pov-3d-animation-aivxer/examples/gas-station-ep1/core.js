@@ -3,11 +3,14 @@ import * as THREE from 'three';
 import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
 export { THREE };
 
-export const W = 720, H = 1280, SRC_W = 1350, SRC_H = 2400, R_C = Math.hypot(W / 2, H / 2);
+// Orientation: 9:16 (default, Reels/TikTok/Shorts) or 16:9 (YouTube) via index.html?aspect=16:9 (render.js --aspect 16:9).
+// Focal lengths everywhere are in px of a 720px short side, so the lens looks the same in both orientations.
+export const LANDSCAPE = new URLSearchParams(location.search).get('aspect') === '16:9';
+export const W = LANDSCAPE ? 1280 : 720, H = LANDSCAPE ? 720 : 1280, SRC_W = LANDSCAPE ? 2400 : 1350, SRC_H = LANDSCAPE ? 1350 : 2400, R_C = Math.hypot(W / 2, H / 2);
 export const OUT = 0.0029;
 const canvas = document.getElementById('c');
 export const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
-renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+renderer.setPixelRatio(1); renderer.setSize(W, H, true);
 export const scene = new THREE.Scene();
 
 // ---------------------------------------------------------------- materials / builders

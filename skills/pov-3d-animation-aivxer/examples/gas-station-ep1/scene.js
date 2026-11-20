@@ -425,7 +425,7 @@ function hudAt(t) {
   for (const l of DLG.lines) for (const c of l.chunks) if (t >= c.t0 && t < c.t1) sub = { c, spk: l.spk };
   subEl.textContent = sub ? sub.c.text : ''; subEl.className = sub ? sub.spk : '';
   if (sub) subEl.style.transform = `translateX(-50%) scale(${0.91 + 0.09 * easeOut(seg(t, sub.c.t0, sub.c.t0 + 0.1))})`;
-  document.getElementById('sub').style.top = t > 112.6 ? '1150px' : '839px';
+  document.getElementById('sub').classList.toggle('endpos', t > 112.6);
   ctaEl.style.display = t > 112.75 ? 'block' : 'none';
   if (t > 112.75) {
     const k = easeOut(seg(t, 112.75, 113.05));

@@ -7,8 +7,13 @@ INSTALL
    "Make a POV horror short about a night-shift cashier at a gas station"
    or attach a reference video and say "Recreate this video's style".
 
+FORMATS
+- 9:16 vertical (Reels, TikTok, Shorts) — default
+- 16:9 landscape (YouTube) — just ask Claude for 16:9
+
 WHAT YOU GET
 - The full skill (SKILL.md) with the step-by-step workflow Claude follows.
+- prompts/gemini_director_brief_prompt.txt: paste into Gemini with your idea to get a full director's brief, then paste that into Claude.
 - scripts/analyze_reference.py: measures a reference video's lens, camera moves, colours and subtitle timing.
 - Two complete example projects: a 4-second style-match preview and a full 1:56 episode
   (3D set, characters with lip-sync, camera moves, ElevenLabs voices, SFX, subtitles, end-screen choice).

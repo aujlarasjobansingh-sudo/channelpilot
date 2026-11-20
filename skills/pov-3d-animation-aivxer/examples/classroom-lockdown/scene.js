@@ -35,10 +35,11 @@ const C = {
   purpleBag: '#8b58d2', redBag: '#d45b47', lilac: '#c6b3ec', tdesk: '#b07a4e',
 };
 
-const W = 720, H = 1280;
+const LANDSCAPE = new URLSearchParams(location.search).get('aspect') === '16:9';   // 9:16 default, 16:9 via ?aspect=16:9
+const W = LANDSCAPE ? 1280 : 720, H = LANDSCAPE ? 720 : 1280;
 const EYE = 1.2;
 const FOCAL = 540;                      // output px per radian at centre (stereographic)
-const SRC_W = 1350, SRC_H = 2400;       // rectilinear source render
+const SRC_W = LANDSCAPE ? 2400 : 1350, SRC_H = LANDSCAPE ? 1350 : 2400;   // rectilinear source render
 const TAN_Y = (H / 2) / Math.hypot(W / 2, H / 2) * Math.tan(2 * Math.atan(Math.hypot(W / 2, H / 2) / (2 * FOCAL)));
 const TAN_X = TAN_Y * (W / H);
 const SRC_FOV = 2 * Math.atan(TAN_Y) * 180 / Math.PI;
@@ -46,7 +47,7 @@ const SRC_FOV = 2 * Math.atan(TAN_Y) * 180 / Math.PI;
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1);
-renderer.setSize(W, H, false);
+renderer.setSize(W, H, true);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(C.ceiling);
 

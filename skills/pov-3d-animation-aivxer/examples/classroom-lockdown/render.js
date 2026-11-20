@@ -8,6 +8,8 @@ const { execFileSync } = require('child_process');
 
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
+const LAND = opt('--aspect', '9:16') === '16:9';   // --aspect 16:9 renders 1280x720
+const VW = LAND ? 1280 : 720, VH = LAND ? 720 : 1280;
 const ROOT = __dirname;
 const FPS = 30;
 const SECONDS = parseFloat(opt('--seconds', '4'));
@@ -27,10 +29,10 @@ const server = http.createServer((req, res) => {
   await new Promise(r => server.listen(0, r));
   const port = server.address().port;
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
-  const page = await browser.newPage({ viewport: { width: 720, height: 1280 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: VW, height: VH }, deviceScaleFactor: 1 });
   page.on('console', m => console.log('[page]', m.text()));
   page.on('pageerror', e => console.error('[pageerror]', e.message));
-  await page.goto(`http://127.0.0.1:${port}/index.html`);
+  await page.goto(`http://127.0.0.1:${port}/index.html${LAND ? '?aspect=16:9' : ''}`);
   await page.waitForFunction(() => window.sceneReady, null, { timeout: 60000 });
   await page.evaluate(() => window.sceneReady);
   await page.evaluate(h => window.setHud(h), HUD);

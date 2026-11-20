@@ -1,6 +1,6 @@
 ---
 name: pov-3d-animation-aivxer
-description: "Make vertical 9:16 first-person (POV) 3D cartoon thriller shorts for Reels/TikTok/Shorts: toon-shaded characters with ink outlines, a measured wide fisheye-style lens, premium camera moves, colour-coded subtitles, ElevenLabs voices, SFX and an end-screen choice. Recreates a reference video's exact style, or scripts and builds a new episode from just a topic. Made by aivxer."
+description: "Make first-person (POV) 3D cartoon thriller videos, vertical 9:16 for Reels/TikTok/Shorts or 16:9 for YouTube: toon-shaded characters with ink outlines, a measured wide fisheye-style lens, premium camera moves, colour-coded subtitles, ElevenLabs voices, SFX and an end-screen choice. Recreates a reference video's exact style, or scripts and builds a new episode from just a topic. Made by aivxer."
 ---
 
 # POV 3D Animation (aivxer)
@@ -25,6 +25,18 @@ Two complete, working examples ship in `examples/` — read them before writing 
    or in a Claude cloud session save it as a network secret for `api.elevenlabs.io` with header `xi-api-key`.
    Free ElevenLabs plans can only use default voices over the API and don't allow commercial use — tell the user.
    No key: offline Piper voices (`voices.py`, models from the rhasspy/piper GitHub release v0.0.2; Hugging Face is often blocked).
+
+## Orientation: 9:16 or 16:9
+Ask which format the user wants if they haven't said (default 9:16 for Reels/TikTok/Shorts; 16:9 for YouTube).
+- The engine reads `index.html?aspect=16:9`; render with `node render.js --aspect 16:9 ...` (1280x720). Default is 9:16 (720x1280).
+- Focal lengths (`f`) are in px of a 720px short side, so the same camera keys keep the same lens look in both orientations.
+- `index.html` has a `.landscape` layout for every overlay (title card, phone cards, subtitles lower third, end-screen buttons side by side).
+- 16:9 shows more of the set left and right: dress the edges of each shot, keep characters nearer the centre third, and
+  prefer slightly tighter focal lengths (×1.1–1.2) for close-ups. For both formats from one project, render each with its own `--aspect`.
+
+## Writing the brief with Gemini (optional)
+`prompts/gemini_director_brief_prompt.txt` makes Gemini (or any chat model) write a director's brief in exactly the format
+this skill expects. The user pastes that brief here; build from it.
 
 ## Workflow
 Keep a task list: analyse → plan → 4 s (or 10 s) preview → approval → full build → check → deliver.

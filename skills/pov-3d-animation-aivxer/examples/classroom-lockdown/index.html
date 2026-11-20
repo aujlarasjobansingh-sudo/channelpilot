@@ -20,7 +20,24 @@
     font-weight: 800; font-size: 44.5px; color: #f5d23a; letter-spacing: 0.2px;
     -webkit-text-stroke: 6px #141414; paint-order: stroke fill;
     text-shadow: 0 3px 0 rgba(0,0,0,0.45); }
+
+  /* ---- 16:9 layout (index.html?aspect=16:9) ---- */
+  #sub.endpos { top: 1150px; }
+  .landscape #stage { width: 1280px; height: 720px; }
+  .landscape #title { left: 48px; top: 40px; }
+  .landscape #sub { top: 590px; }
+  .landscape #sub.endpos { top: 650px; }
+  .landscape #sub span { left: 50%; }
+  .landscape #cards { top: 36px; }
+  .landscape #cta .q { top: 110px; }
+  .landscape #cta .btn { width: 430px; margin-left: -215px; font-size: 32px; }
+  .landscape #cta .g { top: 300px; left: calc(50% - 275px); }
+  .landscape #cta .r { top: 300px; left: calc(50% + 275px); }
+  .landscape #cta .or { top: 330px; }
+  .landscape #cta .bottom { top: 500px; }
+  .landscape #rainfx { width: 1280px; height: 720px; }
 </style>
+<script>if (new URLSearchParams(location.search).get('aspect') === '16:9') document.documentElement.classList.add('landscape');</script>
 <script type="importmap">
 { "imports": { "three": "./node_modules/three/build/three.module.js",
                "three/addons/": "./node_modules/three/examples/jsm/" } }
