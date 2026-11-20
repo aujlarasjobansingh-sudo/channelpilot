@@ -1,0 +1,5 @@
+assets/*.mp4
+vo/*.wav
+shots/
+out/vo_full.wav
+scripts/__pycache__/
