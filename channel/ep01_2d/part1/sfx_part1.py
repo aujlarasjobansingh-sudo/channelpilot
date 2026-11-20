@@ -6,8 +6,10 @@ rng = np.random.default_rng(1)
 def bp(x, lo, hi): return sosfilt(butter(2, [lo, hi], 'bandpass', fs=SR, output='sos'), x)
 def lp(x, f): return sosfilt(butter(2, f, 'lowpass', fs=SR, output='sos'), x)
 def hp(x, f): return sosfilt(butter(2, f, 'highpass', fs=SR, output='sos'), x)
+import sys; sys.path.insert(0, '.')
+from timemap import to_new
 def put(t, x, g=1.0):
-    i = int(t * SR); n = min(len(x), len(out) - i)
+    i = int(to_new(t) * SR); n = min(len(x), len(out) - i)
     if n > 0: out[i:i + n] += x[:n] * g
 def env(n, a, d): e = np.ones(n); na = max(1, int(a * SR)); e[:na] = np.linspace(0, 1, na); e *= np.exp(-np.arange(n) / (d * SR)); return e
 def noise(d): return rng.standard_normal(int(d * SR))

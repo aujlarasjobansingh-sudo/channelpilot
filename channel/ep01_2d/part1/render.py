@@ -1,6 +1,8 @@
 # usage: python3 render.py stills t1,t2,...  |  python3 render.py seg <i> <n>
 import sys, os, subprocess
 from shots_b import *
+import world
+from timemap import to_old, to_new
 ALL = SHOTS_A + SHOTS_B
 DUR = 310.6
 OUTD = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out'); os.makedirs(OUTD, exist_ok=True)
@@ -11,8 +13,9 @@ def find(t):
         if sh[0] <= t < sh[1]: return sh
     return ALL[-1]
 
-def frame(surf, t):
-    t0, t1, fn, cam = find(t); set_boil(t); c = surf.getCanvas()
+def frame(surf, treal):
+    world.REAL = treal; t = to_old(treal)
+    t0, t1, fn, cam = find(t); set_boil(treal); c = surf.getCanvas()
     if cam == 'card': zz, fx, fy = 1.0, 960, 540
     elif cam: zz, fx, fy = cam(t)
     else:
@@ -22,10 +25,10 @@ def frame(surf, t):
     finish(surf, bloom=.42); vignette(c, .5)
     if SEPIA[0] <= t < SEPIA[1]:
         img = surf.makeImageSnapshot(); p = skia.Paint(); p.setColorFilter(SEPIA_CF); p.setAlphaf(.55); c.drawImage(img, 0, 0, skia.SamplingOptions(), p)
-    if any(0 <= t - it < 2.5 / FPS for it in IMPACTS): impact(surf)
+    if any(0 <= treal - to_new(it) < 2.5 / FPS for it in IMPACTS): impact(surf)
     grain(c, t)
     # 2-frame soft cut: tiny white-to-clear flash at shot starts makes cuts feel snappier
-    if 0 <= t - t0 < 1.5 / FPS and t0 > 0 and cam != 'card': c.drawRect(skia.Rect(0, 0, W, H), fp((0, 0, 0), 70))
+    if 0 <= treal - to_new(t0) < 1.5 / FPS and t0 > 0 and cam != 'card': c.drawRect(skia.Rect(0, 0, W, H), fp((0, 0, 0), 70))
 
 if __name__ == '__main__':
     surf = skia.Surface(W, H)

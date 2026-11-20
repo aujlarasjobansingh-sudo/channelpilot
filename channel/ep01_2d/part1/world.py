@@ -13,8 +13,9 @@ _s = np.frombuffer(_raw, np.int16).astype(np.float32) / 32768
 _hop = 24000 // FPS
 _rms = np.array([np.sqrt(np.mean(_s[i * _hop:(i + 1) * _hop] ** 2) + 1e-12) for i in range(len(_s) // _hop)])
 _rms /= np.percentile(_rms, 98)
+REAL = 0.0
 def talk(t):
-    i = int(t * FPS) // 2 * 2   # held on twos
+    i = int(REAL * FPS) // 2 * 2   # always the real voiceover clock   # held on twos
     v = _rms[min(i, len(_rms) - 1)]
     return 'open' if v > .55 else 'mid' if v > .2 else 'flat'
 
