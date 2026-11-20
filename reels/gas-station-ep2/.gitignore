@@ -5,3 +5,4 @@ out/still_*.png
 out/logs/
 out/*.wav
 voices_rec/*.wav
+out/frames_cut/
