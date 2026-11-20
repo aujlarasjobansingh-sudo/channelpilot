@@ -157,6 +157,11 @@ def _hair_back(c, spec, R, lw):
     if h == 'long':
         hp = skia.Path(); hp.addRRect(skia.RRect.MakeRectXY(skia.Rect(-R - 12, -R + 10, R + 12, R + 70), 60, 60)); shape(c, hp, spec.get('hair_col', '#2A1D18'), lw)
     if h == 'bun': circ(c, 0, -R - 20, 42, spec.get('hair_col', '#2A1D18'), lw)
+    if h == 'puff':
+        pp = skia.Path(); pp.addCircle(0, -30, R + 34)
+        for a in range(10):
+            q = skia.Path(); q.addCircle(math.cos(a * .628) * (R + 20), -30 + math.sin(a * .628) * (R + 16), 34); pp = skia.Op(pp, q, skia.PathOp.kUnion_PathOp)
+        shape(c, pp, spec.get('hair_col', '#1D1A20'), lw)
     if h == 'pigtails':
         for sx in (-1, 1): circ(c, sx * (R + 18), -10, 38, spec.get('hair_col', '#2A1D18'), lw)
 
@@ -174,12 +179,20 @@ def _hair_front(c, spec, R, lw, face, light):
         for p_ in fr: hp.lineTo(*p_)
         hp.close(); shape(c, hp, hc, lw)
         shn = skia.Path(); shn.moveTo(-50 + fs, -78); shn.quadTo(-10 + fs, -96, 34 + fs, -84); c.drawPath(shn, ink(lw * 1.2, (88, 92, 122)))
-    elif h in ('short', 'long', 'bun', 'pigtails'):
+    elif h in ('short', 'long', 'bun', 'pigtails', 'puff'):
         hp = skia.Path(); hp.moveTo(-R - 4, -2); hp.arcTo(skia.Rect(-R - 5, -R - 6, R + 5, R + 4), 181, 178, False)
         hp.cubicTo(R - 4, -36, 50 + fs, -64, 6 + fs, -54); hp.cubicTo(-30 + fs, -62, -74, -44, -R - 4, -2); hp.close(); shape(c, hp, hc, lw)
     elif h == 'cap':
         cp = skia.Path(); cp.moveTo(-R + 2, -40); cp.cubicTo(-R, -R - 40, R, -R - 40, R - 2, -40); cp.close(); shape(c, cp, spec.get('cap_col', '#2E6B4E'), lw)
         d = 1 if face >= 0 else -1; poly(c, [(d * 10, -46), (d * (R + 60), -40), (d * (R + 56), -26), (d * 6, -32)], spec.get('cap_col', '#2E6B4E'), lw)
+
+def _goggles(c, spec, R, lw, face):
+    fs = face * 30
+    c.drawArc(skia.Rect(-R - 2, -R - 2, R + 2, R + 2), 196, 148, False, ink(16, boil=False)); c.drawArc(skia.Rect(-R - 2, -R - 2, R + 2, R + 2), 196, 148, False, ink(9, spec.get('goggle_band', '#3A3A44'), boil=False))
+    for gx in (-30, 30):
+        p = skia.Path(); p.addRRect(skia.RRect.MakeRectXY(skia.Rect(gx + fs - 24, -86, gx + fs + 24, -52), 14, 14))
+        c.drawPath(p, sp(linear(0, -86, 0, -52, [col(spec.get('goggle_lens', '#7CF2E0')), col('#2A8A9A')]))); c.drawPath(p, ink(lw * .8))
+        c.drawLine(gx + fs - 12, -78, gx + fs - 2, -80, ink(4, '#FFFFFF', 200, boil=False))
 
 def draw_char(c, x, y, s, spec, face=0.0, eyes='dot', mouth='smile', brow=0.0, brow_tilt=0.0, arms=('down', 'down'),
               tilt=0.0, bob=0.0, squash=0.0, sweat=-1.0, light=-1, rim=None, legs=None, pupil=0.0, sparkle=0.0, lean=0.0, shadow=True, blush=0.0, gloom=0.0):
@@ -248,6 +261,7 @@ def draw_char(c, x, y, s, spec, face=0.0, eyes='dot', mouth='smile', brow=0.0, b
     if rim: rm = skia.Path(head); rm.offset(-light * 11, 4); c.drawPath(skia.Op(head, rm, skia.PathOp.kDifference_PathOp), fp(rim, 200))
     c.restore(); c.drawPath(head, ink(lw))
     _hair_front(c, spec, R, lw, face, light)
+    if spec.get('goggles'): _goggles(c, spec, R, lw, face)
     fx = face * 40; eyy = -2
     for ex0 in (-30, 30):
         ex = ex0 + fx; far = (face > 0 and ex0 < 0) or (face < 0 and ex0 > 0); sq = 1 - .3 * abs(face) if far else 1.0
