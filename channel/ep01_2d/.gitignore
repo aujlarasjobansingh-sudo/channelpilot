@@ -1,2 +1,6 @@
 out/*
 !out/preview_2d_premium.mp4
+part1/out/
+part1/mids.txt
+__pycache__/
+part1/__pycache__/

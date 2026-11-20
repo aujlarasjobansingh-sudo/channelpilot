@@ -136,10 +136,19 @@ ARM = {
     'up': ((-110, -360), (-130, -470), True), 'chin': ((-128, -262), (-62, -322), True),
     'hold': ((-96, -236), (-44, -214), True), 'push': ((-120, -270), (-200, -262), True),
     'phone': ((-120, -300), (-70, -400), True), 'scan': ((-130, -300), (-215, -300), True),
-    'flail': ((-150, -300), (-210, -390), True), 'fist': ((-120, -250), (-70, -270), True)}
+    'flail': ((-150, -300), (-210, -390), True), 'fist': ((-120, -250), (-70, -270), True),
+    'swingF': ((-70, -238), (-20, -185), True), 'swingB': ((-110, -236), (-140, -180), True),
+    'pumpF': ((-40, -250), (10, -300), True), 'pumpB': ((-130, -230), (-150, -280), True),
+    'point': ((-140, -300), (-235, -320), True), 'shrug': ((-150, -250), (-170, -320), True),
+    'cover': ((-140, -330), (-40, -400), True), 'bag': ((-110, -230), (-125, -165), True),
+    'laugh': ((-120, -235), (-40, -215), True), 'self': ((-110, -250), (-30, -270), True),
+    'draw': ((-100, -250), (-150, -230), True), 'heart': ((-110, -260), (-20, -290), True)}
 
 def _arm(spec):
     if isinstance(spec, str): return ARM[spec]
+    if spec[0] == 'lin':
+        _, a, b, kk = spec; ea, ha, sa = ARM[a]; eb, hb, sb = ARM[b]
+        return (lerp(ea[0], eb[0], kk), lerp(ea[1], eb[1], kk)), (lerp(ha[0], hb[0], kk), lerp(ha[1], hb[1], kk)), True
     a, b, k = spec; k = back(k, 1.6); ea, ha, sa = ARM[a]; eb, hb, sb = ARM[b]
     return (lerp(ea[0], eb[0], k), lerp(ea[1], eb[1], k)), (lerp(ha[0], hb[0], k), lerp(ha[1], hb[1], k)), (sb if k > .5 else sa)
 
@@ -148,6 +157,8 @@ def _hair_back(c, spec, R, lw):
     if h == 'long':
         hp = skia.Path(); hp.addRRect(skia.RRect.MakeRectXY(skia.Rect(-R - 12, -R + 10, R + 12, R + 70), 60, 60)); shape(c, hp, spec.get('hair_col', '#2A1D18'), lw)
     if h == 'bun': circ(c, 0, -R - 20, 42, spec.get('hair_col', '#2A1D18'), lw)
+    if h == 'pigtails':
+        for sx in (-1, 1): circ(c, sx * (R + 18), -10, 38, spec.get('hair_col', '#2A1D18'), lw)
 
 def _hair_front(c, spec, R, lw, face, light):
     h = spec.get('hair'); hc = spec.get('hair_col', '#1C1B22'); fs = face * 16
@@ -163,7 +174,7 @@ def _hair_front(c, spec, R, lw, face, light):
         for p_ in fr: hp.lineTo(*p_)
         hp.close(); shape(c, hp, hc, lw)
         shn = skia.Path(); shn.moveTo(-50 + fs, -78); shn.quadTo(-10 + fs, -96, 34 + fs, -84); c.drawPath(shn, ink(lw * 1.2, (88, 92, 122)))
-    elif h in ('short', 'long', 'bun'):
+    elif h in ('short', 'long', 'bun', 'pigtails'):
         hp = skia.Path(); hp.moveTo(-R - 4, -2); hp.arcTo(skia.Rect(-R - 5, -R - 6, R + 5, R + 4), 181, 178, False)
         hp.cubicTo(R - 4, -36, 50 + fs, -64, 6 + fs, -54); hp.cubicTo(-30 + fs, -62, -74, -44, -R - 4, -2); hp.close(); shape(c, hp, hc, lw)
     elif h == 'cap':
@@ -185,6 +196,8 @@ def draw_char(c, x, y, s, spec, face=0.0, eyes='dot', mouth='smile', brow=0.0, b
             c.drawLine(hx0, BODY_BOT - 8, hx0 + fx, -lift, ink(lw))
     bob += 3.0 * math.sin(BOIL['seed'] * .7 + x * .013)   # breathing idle, never fully still
     c.translate(0, -bob); c.skew(lean, 0); c.scale(1 + squash * .6, 1 - squash)
+    if spec.get('dress'):
+        dp = skia.Path(); dp.moveTo(-80, BODY_BOT - 40); dp.lineTo(80, BODY_BOT - 40); dp.lineTo(112, BODY_BOT + 50); dp.lineTo(-112, BODY_BOT + 50); dp.close(); shape(c, dp, spec['dress'], lw)
     if spec.get('cape'):
         cp = skia.Path(); sw = math.sin(BOIL['seed'] * .9) * 10
         cp.moveTo(-70, BODY_TOP + 20); cp.cubicTo(-130 + sw, -200, -150 + sw, -60, -120 + sw, 0); cp.lineTo(120 - sw, 0)
@@ -292,6 +305,12 @@ def draw_char(c, x, y, s, spec, face=0.0, eyes='dot', mouth='smile', brow=0.0, b
         shape(c, d, '#8FC8EE', lw * .7)
     c.restore(); c.restore()
 
+def walk_arms(phase):  # opposite to legs
+    u = .5 + .5 * math.sin(phase)
+    return (('lin', 'swingB', 'swingF', u), ('lin', 'swingB', 'swingF', 1 - u))
+def run_arms(phase):
+    u = .5 + .5 * math.sin(phase)
+    return (('lin', 'pumpB', 'pumpF', u), ('lin', 'pumpB', 'pumpF', 1 - u))
 def walk_legs(phase, stride=40, lift=18):
     a = math.sin(phase)
     return ((-12, a * stride, max(0, math.cos(phase)) * lift), (12, -a * stride, max(0, -math.cos(phase)) * lift))
