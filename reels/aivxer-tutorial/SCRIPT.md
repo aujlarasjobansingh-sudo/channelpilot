@@ -98,4 +98,4 @@ A few tips from my own uploads. Keep it fast: no dead air, something new every c
 
 ## 10:00 — Outro
 
-That's the whole system: one reference video, a skill, and your ideas. No editing software and no animation experience. If you want the skill and the prompt, the link is in the description, or comment "SKILL" and I'll send it to you. If you make a video with it, tag me. I genuinely want to see what you create. Subscribe for more AI tools that actually do the work, and I'll see you in the next one.
+That's the whole system: one reference video, a skill, and your ideas. No editing software and no animation experience. You can get the skill and the prompt from my WhatsApp channel, or from the link in the description. If you make a video with it, tag me. I genuinely want to see what you create. Subscribe for more AI tools that actually do the work, and I'll see you in the next one.
