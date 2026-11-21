@@ -1,0 +1,163 @@
+    0.10-    4.13  This animated POV page has over 200,000 followers.
+    4.39-    7.14  One of its videos crossed 30 million views.
+    7.43-   10.21  And there's no studio behind it, no team of animators.
+   10.50-   15.24  It's simple 3D cartoons filmed through your own eyes where you are the main character.
+   15.56-   17.77  And at the end, you choose what happens next.
+   18.15-   19.65  So I asked myself one question.
+   20.33-   21.89  Claude make videos like this?
+   22.18-   29.32  Not a slideshow, not a talking avatar, but a real animated short with characters, camera moves, voices, and sound.
+   29.83-   32.36  I gave Claude one single video from this page.
+   32.93-   36.58  built in the next few hours honestly changed how I think about content.
+   36.90-   38.76  In this video, I'll show you everything.
+   39.14-   40.61  How Claude studied the original.
+   40.84-   42.12  how it rebuilt the style.
+   42.37-   49.77  How I used it to make my own original series, the results I got on my page, and exactly how you can do the same thing step by step.
+   50.21-   50.89  Let's get into it.
+   51.37-   55.08  Before building anything, let's understand why this format works so well.
+   55.56-   57.61  First, the camera is your eyes.
+   57.83-   62.82  You see your own hands on the desk and your own arms, so your brain puts you inside the story.
+   63.24-   65.80  Second, the style is simple on purpose.
+   66.34-   70.95  cartoon colors, thick black outlines, and small heads on big puffy shoulders.
+   71.21-   74.41  It looks friendly, which makes the horror moments hit even harder.
+   74.89-   77.06  Third, the pacing never stops.
+   77.35-   81.67  There's a calm moment, then something strange, then a twist, then another twist.
+   81.89-   85.13  And right when it gets intense, the video freezes and asks you.
+   85.48-   86.15  What do you do?
+   86.57-   88.36  Two buttons, green or red.
+   88.68-   93.48  Everyone comments their answer, and that comment section is what pushes these videos to millions.
+   93.83-   97.89  So my goal wasn't to copy their characters or their stories. That's not okay.
+   98.18-  100.26  My goal was to recreate the style.
+  100.58-  103.30  The look, the lens, the camera, the rhythm.
+  103.72-  106.05  Then I'd tell my own original stories with it.
+  106.47-  108.39  Here's the part most people don't expect.
+  108.68-  112.20  I uploaded one video to Claude and said, recreate this style.
+  112.61-  113.86  Claude didn't eyeball it.
+  114.12-  116.90  It wrote a small analysis script and measured the video.
+  117.25-  121.96  It split the video into frames and made contact sheets so it could see every scene at once.
+  122.25-  127.59  Then it ran optical flow, a technique that tracks how pixels move from one frame to the next.
+  127.91-  129.64  That gave it a timeline of the camera.
+  129.93-  134.28  when it holds still, when it makes a smooth, eased move, when it does a fast snap.
+  134.57-  148.23  It even worked out that the moves follow a sign ease in and ease out from the shape of the speed curve. Next, it sampled the colors, the actual wall colors, desk colors, and skin tones, so the palette came from the video, not from memory.
+  148.58-  150.31  and it measured the subtitles.
+  150.57-  154.57  when each word pops, how big the text is, and how long it stays on screen.
+  155.21-  157.13  The biggest discovery was the lens.
+  157.48-  160.61  The video looks like a fisheye, but not a cheap bulging one.
+  161.22-  166.34  Claude measured how straight lines bend toward the edges and matched it to a stereographic lens.
+  166.60-  170.18  the kind that keeps faces looking natural while showing a very wide view.
+  170.60-  174.18  Getting that one number right is what made everything feel like the original.
+  174.76-  175.78  Now the build.
+  176.20-  178.57  Everything you're going to see is drawn in code.
+  178.89-  182.37  There's no stock footage, no image generator, and no video AI.
+  182.98-  186.95  Claude uses 3.js, a 3D engine that runs in a web browser.
+  187.56-  191.53  The classroom, the desks, the doors, and the lockers are all simple shapes.
+  191.78-  195.46  Boxes, cylinders, and spheres with flat cartoon materials.
+  195.78-  200.33  The thick black outlines come from an outline effect that draws ink around every object.
+  200.77-  206.25  Then, the special wide lens is applied on top as a final pass, like putting a real lens on a camera.
+  206.66-  209.54  The camera itself is written like a director's shot list.
+  209.93-  211.30  At this second, look left.
+  211.56-  213.38  Eased to the door over half a second.
+  213.67-  214.09  Hold.
+  214.34-  215.43  then snap to the window.
+  215.85-  217.64  That's why the movement feels premium.
+  217.99-  219.59  It's never a constant wobble.
+  219.91-  220.58  It's still.
+  220.81-  221.73  Smooth move.
+  221.96-  224.61  Dead hold, slow drift, fast snap.
+  225.00-  229.22  Then, Claude renders the video one frame at a time inside a headless browser.
+  229.45-  233.38  30 frames for every second and stitches them together into an MP4.
+  233.77-  235.65  Here's the original next to Claude's version.
+  236.10-  238.79  Same lens, same camera move, same timing.
+  239.30-  242.66  A style test is one thing, but a story needs characters.
+  243.08-  244.61  Claude built them from scratch.
+  244.97-  248.77  Each character has a body, a face with eyes, eyebrows, and a mouth.
+  249.19-  251.88  arms that use something called inverse kinematics.
+  252.20-  257.93  Instead of animating every joint, you just say, put the hand here, and the elbow and shoulder figure themselves out.
+  258.34-  263.37  That's how my POV hands grab a walkie-talkie, hold bike handlebars, or press against a fence.
+  263.69-  271.11  The faces can show fear, worry, and tears, and in my horror episode, one character's eyes slowly turn completely black.
+  271.62-  273.32  The mouths move with the voices too.
+  273.77-  279.01  Claude measures how loud each line of dialogue is, frame by frame, and opens the mouth to match.
+  279.30-  280.81  So the lip sync is automatic.
+  281.19-  283.21  For voices, I use 11 labs.
+  283.43-  289.29  Claude writes every line of dialogue with emotion tags like whispers, panicked, crying, or cold.
+  289.70-  292.04  and generates them through the 11 Labs API.
+  292.58-  294.31  but it doesn't just drop the audio in.
+  294.76-  300.33  It trims silences, tightens pauses, and fits every line to its shot, so there's no dead air.
+  300.84-  302.05  It also adds effects.
+  302.47-  305.83  In my 80s episode, the best friend talks through a walkie-talkie.
+  306.05-  308.93  So Claude ran his voice through a radio filter with static.
+  309.29-  311.49  Then a second voice appears in the woods.
+  311.72-  314.50  The same voice, but with a strange doubled echo.
+  314.79-  317.29  Because the twist is that something is copying him.
+  317.73-  318.53  Same voice.
+  318.76-  321.99  Two versions, and the audience has to decide which one is real.
+  322.53-  326.76  From those lines, Claude also creates the subtitles, three words at a time.
+  326.98-  327.62  color coded.
+  328.04-  328.84  White is you.
+  329.13-  330.66  Blue is your friend on the radio.
+  330.92-  332.58  And red is the thing in the woods.
+  333.06-  334.53  This one surprised me most.
+  334.89-  337.38  Every sound effect is synthesized in code.
+  337.77-  339.53  The crickets that suddenly go silent.
+  339.88-  341.83  bike chain clicking and the tire skid.
+  342.28-  345.80  buzz of a streetlight before it pops and the glass tinkling down.
+  346.25-  349.64  Radiostatic, the fence rattling, the creatures shriek.
+  350.09-  351.49  The music is original too.
+  351.97-  354.05  Claude wrote an 80s-style synth score.
+  354.63-  358.34  Peggio during the ride, a dark drone when the woods start glowing.
+  358.95-  361.13  big heavy hit when the creature appears.
+  361.86-  364.68  Total silence on the freeze frame with just a heartbeat.
+  365.09-  366.73  It's not copied from any show.
+  367.05-  369.54  It's composed note by note in code.
+  370.02-  371.53  Finally, it mixes everything.
+  371.88-  377.48  The music ducks under the dialogue, and the whole thing is normalized to minus 14 LUFS.
+  377.70-  380.65  The loudness Instagram, TikTok, and YouTube expect.
+  381.38-  384.13  I started my own page and posted original episodes.
+  384.52-  389.51  First, a gas station thriller, where a girl runs in at two in the morning screaming, lock the door.
+  389.83-  392.36  And then a cop shows up saying she's the dangerous one.
+  392.87-  398.47  Then an 80s sci-fi horror about a kid on a BMX, a power plant, and a signal in the woods.
+  398.82-  402.31  Every video ends with a choice, and the comments decide part two.
+  402.73-  408.45  In the last 30 days, my page got over 349,000 views, starting from zero.
+  409.03-  412.20  Every frame, voice, and sound was made with clod.
+  412.58-  416.65  I turned this whole process into a clawed skill, so you don't have to figure it out yourself.
+  417.00-  418.44  Here's exactly how to use it.
+  418.89-  420.81  First, write your brief with Gemini.
+  421.22-  421.99  Take my prompt.
+  422.21-  425.29  paste it into Gemini, and add your story idea in one line.
+  425.64-  425.99  Like
+  426.31-  431.17  a night shift cashier hears knocking from the freezer. Gemini writes a full director's brief.
+  431.46-  436.20  characters, subtitle colors, and a shot list with timings, dialogue, and sound effects.
+  436.55-  437.03  Copy it.
+  437.61-  439.08  Second, download the skill.
+  439.46-  441.38  It's a zip file with everything inside.
+  441.61-  447.49  The engine, the lens, the characters, the voice tools, the sound design, and two complete example episodes.
+  447.91-  448.33  Third,
+  448.55-  449.51  Upload it to Claude.
+  449.93-  452.74  Open Claude, go to Customize, then Skills.
+  453.19-  454.63  plus and upload the zip.
+  454.98-  455.40  That's it.
+  455.62-  456.33  It's installed.
+  456.81-  458.89  Fourth, get your 11 labs key.
+  459.24-  464.55  Go to 11 Labs, open API keys, and create a new key with text-to-speech turned on.
+  465.03-  470.28  Free plans can only use the default voices, and for commercial use you'll want a paid plan, so check that.
+  470.79-  472.52  Fifth, and this is important.
+  472.77-  476.61  When Claude asks for the key, paste it into the secure form it shows you.
+  477.03-  478.82  Never paste your key into the chat.
+  479.24-  480.77  Sixth, paste your brief.
+  481.16-  481.86  Claude reads it.
+  482.09-  485.61  plans the episode and shows you still frames and a short preview first.
+  485.86-  488.74  When you're happy, say yes, and it builds the full video.
+  489.41-  493.67  characters, camera, voices, subtitles, music, and the end screen choice.
+  493.96-  495.27  You also choose the format.
+  495.49-  499.33  9x16 for Reels and TikTok, or 16x9 for YouTube.
+  499.85-  501.45  A few tips from my own uploads.
+  501.80-  505.51  Keep it fast, no dead air, something new every couple of seconds.
+  505.80-  512.07  End on a freeze frame with two clear choices, and actually make part two from the winning comment. People come back for that.
+  512.58-  514.66  Use a strong thumbnail with a question on it.
+  515.17-  519.56  And turn on Instagram's AI info label because the voices are AI.
+  519.91-  523.40  Be honest about it, and always make your own characters and stories.
+  523.65-  526.09  Copy a style, never someone's characters.
+  526.44-  527.37  That's the whole system.
+  527.69-  533.70  One reference video, a skill, and your ideas. No editing software and no animation experience.
+  533.99-  538.02  You can get the skill and the prompt from my WhatsApp channel, or from the link in the description.
+  538.34-  542.18  If you make a video with it, tag me. I genuinely want to see what you create.
+  542.53-  546.85  Subscribe for more AI tools that actually do the work, and I'll see you in the next one.
