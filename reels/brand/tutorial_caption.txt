@@ -1,0 +1,22 @@
+=== INSTAGRAM REELS CAPTION — Tutorial ===
+
+Claude made this entire horror short. Here's how YOU can too. 🎬🤯
+
+5 steps, no editing software:
+1️⃣ Paste my prompt into Gemini → it writes your director's brief
+2️⃣ Download the skill
+3️⃣ Claude → Customize → Skills → upload the zip
+4️⃣ ElevenLabs → create an API key (text-to-speech on) for the voices
+5️⃣ Paste the brief into Claude → preview → full video 🔥
+
+⚠️ Paste your API key ONLY in Claude's secure form. Never in the chat.
+
+💬 Comment "SKILL" and I'll DM you the tutorial + skill.
+(Make sure your DMs are open!)
+
+Follow @povXOfficial for more 3D POV thrillers 👁️
+
+#claude #claudeai #aitools #aivideo #3danimation #animation #povvideo #tutorial #howto #contentcreator #reelstips #aiart #ai #reels #fyp #povXOfficial
+
+=== PINNED COMMENT ===
+Comment "SKILL" 👇 and I'll DM you the tutorial + skill. (DMs open please!)
