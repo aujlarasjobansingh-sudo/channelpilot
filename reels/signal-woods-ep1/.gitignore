@@ -1,0 +1,7 @@
+node_modules
+voices_models
+out/frames/
+out/still_*.png
+out/logs/
+out/*.wav
+voices_rec/*.wav
