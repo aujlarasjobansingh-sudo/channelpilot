@@ -1152,7 +1152,38 @@ def s41(T0, D):
                     text(c, "SUBSCRIBE" if not sub else "SUBSCRIBED", 960, 805, 36, "x", "#ffffff", 1, "c")
                 x, y = cp.at(t); cursor(c, x, y, 1.1, 1 if abs(t - tsub) < .12 else 0); click_ring(c, x, y, lin(t, tsub, tsub + .4))
         bgdock(c, 0)
-    return cam, draw, [], dict(fade_out=1.2)
+    return cam, draw
+
+
+def s42(T0, D):
+    """silent end card: RESULTS + my reels with view counts (music only)"""
+    prof = IMG("my_profile2.png")
+    WX, WY, WW, WH = 760, 60, 600, 860
+    S = WW / 1224; IH = 2720 * S; CH = WH - 38; SCR = IH - CH; K = 1224 / 900
+    t1 = 1.3; tsc = 2.6
+    def scroll(t): return SCR * eio(lin(t, tsc, tsc + 1.0))
+    def px(x900): return WX + x900 * K * S
+    def py(y900, t): return WY + 38 + y900 * K * S - scroll(t)
+    ry = WY + 38 + 1816 * K * S - SCR
+    cam = Cam([(0, 960, 540, 1.0), (t1, 960, 540, 1.0), (tsc, 960, 540, 1.0), (tsc + 1.1, 1180, ry - 140, 1.18), (D, 1180, ry - 140, 1.2)])
+    sfx(0, "whoosh", .8); sfx(.1, "rise", .5); sfx(.5, "ding", .6); sfx(t1, "whoosh_s", .5); sfx(t1 + .3, "pop", .6); sfx(t1 + .6, "ding", .5)
+    sfx(tsc, "whoosh_s", .5); sfx(tsc + 1.1, "ding", .5); sfx(tsc + 1.4, "ding", .5); sfx(tsc + 1.7, "ding", .5)
+    def page(c2, x, y, w, h, t):
+        rrect(c2, x, y, w, h, 0, "#0c0f14"); draw_img(c2, prof, x, y - scroll(t), w, IH)
+    def draw(c, t):
+        bg(c, "My page")
+        k = wk(t, .1, .4) * (1 - lin(t, t1 - .2, t1 + .1))
+        if k > 0: big_title(c, "RESULTS", 500, 200, k, YEL)
+        if t > t1:
+            window(c, WX, WY, WW, WH, "Instagram  •  my page", a=wk(t, t1), sc=wsc(t, t1), content=lambda c2, x, y, w, h: page(c2, x, y, w, h, t), bg="#0c0f14")
+            text(c, "RESULTS", 380, 200, 90, "d", YEL, wk(t, t1, .3), "c")
+            P(c, t, t1 + .6, 380, 300, "349.4K views in 30 days", 30, "dot", GREEN)
+            for i, (xx, s_, cc) in enumerate([(660, "330K", GREEN), (370, "80.2K", YEL), (80, "10.7K", "#9cdcfe")]):
+                t0 = tsc + 1.1 + i * .3
+                ann_circle(c, px(xx + 12), py(1816, t), 44, wk(t, t0, .4), cc)
+                P(c, t, t0, 1640, 360 + i * 110, s_ + " views", 34, "dot", cc)
+        bgdock(c, 2)
+    return cam, draw, [], dict(fade_out=1.0)
 
 # ---------------- scene list (cuts in the silences) ----------------
 STARTS = [(10.50, s02), (18.15, s03), (29.83, s04), (36.90, s05), (51.37, s06), (63.24, s07), (74.89, s08), (93.83, s09), (106.47, s10),
@@ -1166,4 +1197,5 @@ def build_list(first_end):
     out = []; cuts = [first_end] + [cut_before(s) for s, _ in STARTS[1:]] + [END]
     for i, (s, fn) in enumerate(STARTS):
         out.append((fn.__name__, cuts[i], cuts[i + 1], fn))
+    out.append(("s42", END, END + 7.5, s42))
     return out
