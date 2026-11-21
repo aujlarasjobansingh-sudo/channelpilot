@@ -2,7 +2,7 @@ from comps import *
 import json
 
 VO = "vo/vo48.wav"
-OUT = "out/preview_10s.mp4"
+OUT = "out/final.mp4"
 MUSIC_DB = -30
 WORDS = json.load(open(ROOT + "/vo/words.json"))
 
@@ -58,4 +58,6 @@ def s01(T0, D):
         bgdock(c, 1)
     return cam, draw
 
-SCENES = [("s01", 0.0, 10.35, s01)]
+
+from scenes_b import build_list
+SCENES = [("s01", 0.0, 10.355, s01)] + build_list(10.355)
