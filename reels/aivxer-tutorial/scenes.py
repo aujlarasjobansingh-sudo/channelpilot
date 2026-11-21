@@ -61,3 +61,4 @@ def s01(T0, D):
 
 from scenes_b import build_list
 SCENES = [("s01", 0.0, 10.355, s01)] + build_list(10.355)
+INSERTS = [dict(id="x_signal", after=SCENES[-1][2], path=A + "/signal_169.mp4", dur=97.0, label="THE SIGNAL IN THE WOODS  ·  Episode 1", color="#ef4444")]

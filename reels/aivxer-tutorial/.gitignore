@@ -2,3 +2,4 @@ __pycache__/
 shots/
 vo/*.wav
 out/build.log
+out/final.mp4
