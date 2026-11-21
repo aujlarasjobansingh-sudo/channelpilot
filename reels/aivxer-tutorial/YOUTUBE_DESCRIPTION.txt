@@ -1,0 +1,45 @@
+I gave Claude ONE viral animated video (30M+ views on another creator's page) and asked it to recreate the style. It measured the lens, the camera moves, the colours and the subtitle timing, then rebuilt everything in 3D, from code. Then I used it to make my own original POV horror series, and my page hit 349K views in 30 days.
+
+In this video I show you exactly how it works and how YOU can make the same kind of videos, step by step. No editing software, no animation experience.
+
+🔗 GET THE SKILL + THE GEMINI PROMPT
+🌐 Website: https://claude.ai/artifact/KNmL6JA1dGmx4gRxGcS1hY
+🛒 Buy directly: https://8354852614975.gumroad.com/l/pov-3d-animation-skill
+💬 WhatsApp channel (free updates, prompts, new skills): [YOUR WHATSAPP CHANNEL LINK]
+
+⏱️ CHAPTERS
+0:00 This page has 217K followers
+0:51 Why this format works
+1:46 Claude measures the video
+2:35 The lens
+2:54 Building it in 3D, from code
+3:26 The camera shot list
+3:54 Original vs Claude's version
+3:59 Characters + inverse kinematics
+4:41 Voices with ElevenLabs
+5:32 Sound effects + music, made in code
+6:21 My results
+6:52 The skill: step by step
+8:20 Tips before you post
+8:46 Get the skill + prompt
+9:06 Results
+9:14 Full episode: The Signal in the Woods
+
+🛠️ WHAT YOU NEED
+• Claude (to upload the skill and build the video)
+• Gemini (free, to write the director's brief with my prompt)
+• ElevenLabs API key (for the voices; paid plan for commercial use)
+
+📌 IMPORTANT
+• Paste your API key ONLY into Claude's secure form, never into the chat.
+• Make your own characters and stories. Recreate a style, never someone else's characters.
+• The voices are AI-generated. Turn on the AI label when you post.
+• The reference page shown at the start is used only to study the animation style. I'm not affiliated with it. All my episodes, characters, music and sound effects are original.
+
+🎬 Watch my POV horror series on Instagram & TikTok: @povxofficial
+💼 Business: aivxerofficial@gmail.com
+
+If you make a video with the skill, tag me. I'd love to see it! 🙌
+Subscribe for more AI tools that actually do the work.
+
+#claude #claudeai #aianimation #3danimation #aivideo #povanimation #aitools #contentcreator #elevenlabs #gemini #animationtutorial #youtubeshorts
