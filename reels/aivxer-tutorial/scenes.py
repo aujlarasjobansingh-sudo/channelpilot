@@ -38,7 +38,7 @@ def s01(T0, D):
     def draw(c, t):
         bg(c, "Browser")
         k = lin(t, .1, .35)
-        window(c, WX, WY, WW, WH, "Instagram  •  name hidden", a=k, sc=mix(.9, 1, back(lin(t, .1, .55))),
+        window(c, WX, WY, WW, WH, "Instagram", a=k, sc=mix(.9, 1, back(lin(t, .1, .55))),
                content=lambda c2, x, y, w, h: page(c2, x, y, w, h, t), bg="#0c0f14")
         ann_label(c, "THEIR PAGE", WX - 250, WY + 120, lin(t, .7, 1.0), "#ffd23f", 30)
         # 217K highlight
