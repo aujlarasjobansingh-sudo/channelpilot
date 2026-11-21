@@ -814,26 +814,42 @@ def s31(T0, D):
 
 def s32(T0, D):
     r = R(T0); tch = r("choice"); tpt = r("part"); t30 = r("30"); t349 = r("349"); tzero = r("zero"); tev = r("every", 8); tcl = r("clod")
-    vc = V("signal.mp4", 89.6); prof = IMG("my_profile.png")
-    S = 640 / 1224; CROP = 1180  # show only the top of the profile (no low-view reels)
-    dy = 60 + 38 + 900 * S  # dashboard centre
-    cam = Cam([(0, 960, 540, 1.0), (t30 - .4, 960, 540, 1.0), (t30 + .3, 1140, dy, 1.75), (tzero + .3, 1140, dy, 1.8), (tev, 960, 540, 1.0), (D, 960, 540, 1.04)])
-    sfx(0, "whoosh", .7); sfx(tch, "pop", .5); sfx(tpt, "pop", .4); sfx(t30, "whoosh_s", .5); sfx(t349, "ding", .7); sfx(tzero, "pop", .5); sfx(tcl, "ding", .5)
-    def page(c2, x, y, w, h):
-        rrect(c2, x, y, w, h, 0, "#0c0f14")
-        c2.drawImageRect(prof, skia.Rect.MakeXYWH(0, 0, 1224, CROP), skia.Rect.MakeXYWH(x, y, w, CROP * S), skia.SamplingOptions(skia.FilterMode.kLinear), skia.Paint(AntiAlias=True))
+    vc = V("signal.mp4", 89.6); prof = IMG("my_profile2.png")
+    WX, WY, WW, WH = 800, 50, 560, 880
+    S = WW / 1224; IH = 2720 * S; CH = WH - 38; SCR = IH - CH; K = 1224 / 900
+    def scroll(t): return SCR * eio(lin(t, tzero + .2, tzero + 1.0))
+    def py(y900, t): return WY + 38 + y900 * K * S - scroll(t)
+    def px(x900): return WX + x900 * K * S
+    dy = WY + 38 + 785 * K * S
+    ry = WY + 38 + 1818 * K * S - SCR
+    cam = Cam([(0, 960, 540, 1.0), (t30 - .4, 960, 540, 1.0), (t30 + .3, px(450), dy, 1.7), (tzero, px(450), dy, 1.75),
+               (tzero + 1.0, px(450), ry - 40, 1.45), (tcl - .5, px(450), ry - 40, 1.5), (tcl - .2, 960, 540, 1.0), (D, 960, 540, 1.03)])
+    sfx(0, "whoosh", .7); sfx(tch, "pop", .5); sfx(tpt, "pop", .4); sfx(t30, "whoosh_s", .5); sfx(t349, "ding", .7)
+    sfx(tzero + .2, "whoosh_s", .5); sfx(tzero + 1.1, "ding", .5); sfx(tzero + 1.4, "ding", .5); sfx(tzero + 1.7, "pop", .5); sfx(tcl, "ding", .5)
+    def page(c2, x, y, w, h, t):
+        rrect(c2, x, y, w, h, 0, "#0c0f14"); draw_img(c2, prof, x, y - scroll(t), w, IH)
     def draw(c, t):
         bg(c, "My page")
         vwin(c, 160, 60, 830, vc, int(t * FPS), "every episode ends with a choice", a=wk(t, .1) * (1 - lin(t, t30 - .5, t30 - .2)), sc=wsc(t, .1))
         P(c, t, tpt, 650, 940 - 40, "Comments decide Part 2", 28, "dot", YEL, t1=t30 - .5)
         if t > t30 - .6:
-            window(c, 820, 60, 640, CROP * S + 38, "Instagram  •  my page", a=wk(t, t30 - .6), sc=wsc(t, t30 - .6), content=page, bg="#0c0f14")
-            ann_circle(c, 1140, dy, 190, wk(t, t349, .5))
-            k = wk(t, t349 + .1, .4)
+            window(c, WX, WY, WW, WH, "Instagram  •  my page", a=wk(t, t30 - .6), sc=wsc(t, t30 - .6),
+                   content=lambda c2, x, y, w, h: page(c2, x, y, w, h, t), bg="#0c0f14")
+            kd = wk(t, t349, .5) * (1 - lin(t, tzero + .1, tzero + .4))
+            ann_circle(c, px(270), py(795, t), 120, kd)
+            k = wk(t, t349 + .1, .4) * (1 - lin(t, tzero + .1, tzero + .4))
             if k > 0:
-                with Pop(c, 1000, dy + 90, 280, 120, k):
-                    rrect(c, 960, dy + 70, 360, 120, 26, "#111114", .95); rrect_stroke(c, 960, dy + 70, 360, 120, 26, GREEN, .9, 3)
-                    text(c, "349.4K views", 1140, dy + 130, 40, "x", "#ffffff", 1, "c"); text(c, "in the last 30 days", 1140, dy + 170, 22, "m", "#a1a1aa", 1, "c")
+                with Pop(c, px(450) - 180, py(785, t) + 70, 360, 120, k):
+                    x0, y0 = px(450) - 180, py(785, t) + 70
+                    rrect(c, x0, y0, 360, 120, 26, "#111114", .95); rrect_stroke(c, x0, y0, 360, 120, 26, GREEN, .9, 3)
+                    text(c, "349.4K views", x0 + 180, y0 + 60, 40, "x", "#ffffff", 1, "c"); text(c, "in the last 30 days", x0 + 180, y0 + 100, 22, "m", "#a1a1aa", 1, "c")
+            for i, (xx, s_, cc) in enumerate([(660, "330K", GREEN), (370, "80.2K", YEL), (80, "10.7K", "#9cdcfe")]):
+                t0 = tzero + 1.1 + i * .3
+                kk = wk(t, t0, .4)
+                if kk > 0:
+                    ann_circle(c, px(xx + 12), py(1816, t), 44, kk, cc)
+            kr = wk(t, tzero + 1.8, .4)
+            if kr > 0: label(c, "Reel views:  330K  ·  80.2K  ·  10.7K", px(450), py(1818, t) + 95, kr, GREEN, 22)
             P(c, t, tzero, 1650, 300, "Started from zero", 30, "dot", YEL)
             P(c, t, tcl, 1650, 420, "100% made with Claude", 30, "check")
         bgdock(c, 2)
