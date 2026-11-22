@@ -1,6 +1,6 @@
 // Usage: node render.js [--still t1,t2,...] [--out file.mp4] [--seconds 4] [--nohud]
 // Serves this folder, renders the three.js scene frame-by-frame in headless Chromium, encodes with ffmpeg.
-const { chromium } = require('playwright');
+const { launchBrowser } = require('./browser.js');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -28,7 +28,7 @@ const server = http.createServer((req, res) => {
 (async () => {
   await new Promise(r => server.listen(0, r));
   const port = server.address().port;
-  const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = await launchBrowser();
   const page = await browser.newPage({ viewport: { width: VW, height: VH }, deviceScaleFactor: 1 });
   page.on('console', m => console.log('[page]', m.text()));
   page.on('pageerror', e => console.error('[pageerror]', e.message));

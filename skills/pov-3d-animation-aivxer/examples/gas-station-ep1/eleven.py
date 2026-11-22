@@ -1,8 +1,10 @@
 """Generate Episode 1 dialogue with ElevenLabs (eleven_v4 + audio tags) -> voices_rec/<id>.wav
-API key: set ELEVENLABS_API_KEY, or in a Claude cloud session save it as a network secret for api.elevenlabs.io (header xi-api-key).
+API key: see eleven_api.py (ELEVENLABS_API_KEY env var, ~/.elevenlabs_key, or a Claude Code network secret with ELEVENLABS_VIA_PROXY=1).
+If there is no key it STOPS with NO_ELEVENLABS_KEY: ask the user for one, or use the free offline voices (voices.py).
 Usage: python3 eleven.py [ids...]   (default: all lines)
 """
-import os, sys, json, subprocess, urllib.request
+import os, sys
+from eleven_api import get_key, tts, to_wav
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'voices_rec'); os.makedirs(os.path.join(OUT, 'mp3'), exist_ok=True)
@@ -31,14 +33,10 @@ LINES = {
     'l19': ('you', '[quietly] [ominous] One of them is lying. [long pause] [whispers] Or... both of them are.'),
 }
 ids = sys.argv[1:] or list(LINES)
+get_key()                       # fail fast (and ask the user) before generating anything
 for lid in ids:
     spk, text = LINES[lid]
-    body = json.dumps({'text': text, 'model_id': 'eleven_v4', 'voice_settings': {'stability': 0.5, 'similarity_boost': 0.8}}).encode()
-    req = urllib.request.Request(f'https://api.elevenlabs.io/v1/text-to-speech/{VOICE[spk]}?output_format=mp3_44100_128',
-                                 data=body, headers={'Content-Type': 'application/json', 'xi-api-key': os.environ.get('ELEVENLABS_API_KEY', 'proxy-injected')})
-    mp3 = os.path.join(OUT, 'mp3', lid + '.mp3')
-    with urllib.request.urlopen(req, timeout=120) as r, open(mp3, 'wb') as f: f.write(r.read())
-    wav = os.path.join(OUT, lid + '.wav')
-    subprocess.run(['ffmpeg', '-y', '-v', 'error', '-i', mp3, '-ar', '48000', '-ac', '1', wav], check=True)
-    dur = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', wav], capture_output=True, text=True).stdout)
+    mp3 = os.path.join(OUT, 'mp3', lid + '.mp3'); wav = os.path.join(OUT, lid + '.wav')
+    tts(text, VOICE[spk], mp3)
+    dur = to_wav(mp3, wav)
     print(f'{lid} {spk:4s} {dur:5.2f}s  {text}')

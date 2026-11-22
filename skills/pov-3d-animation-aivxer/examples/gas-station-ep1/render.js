@@ -2,7 +2,7 @@
 //   node render.js --still 1,2,3                 → out/still_<t>.png
 //   node render.js --from 0 --to 1200 [--nohud]  → out/frames/f_XXXX.png for that frame range (no encode)
 //   node render.js --encode [--out file.mp4]     → encode out/frames + out/mix.wav (or sfx.wav)
-const { chromium } = require('playwright');
+const { launchBrowser } = require('./browser.js');
 const http = require('http'), fs = require('fs'), path = require('path');
 const { execFileSync } = require('child_process');
 const args = process.argv.slice(2);
@@ -27,7 +27,7 @@ const server = http.createServer((req, res) => {
 });
 (async () => {
   await new Promise(r => server.listen(0, r));
-  const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = await launchBrowser();
   const page = await browser.newPage({ viewport: { width: VW, height: VH }, deviceScaleFactor: 1 });
   page.on('pageerror', e => console.error('[pageerror]', e.message));
   page.on('console', m => { if (m.type() === 'error') console.error('[console]', m.text()); });

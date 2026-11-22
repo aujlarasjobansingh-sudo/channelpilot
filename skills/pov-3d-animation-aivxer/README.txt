@@ -11,11 +11,18 @@ FORMATS
 - 9:16 vertical (Reels, TikTok, Shorts) — default
 - 16:9 landscape (YouTube) — just ask Claude for 16:9
 
+NEW IN v3 (fixes)
+- Always real 3D: the skill now refuses 2D fallbacks and proves the 3D renderer works first (scripts/smoke_test.sh).
+- Works in locked-down sandboxes (Claude.ai): Chromium now installs from npm (@sparticuz/chromium) — no browser download site needed.
+- ElevenLabs: Claude now ASKS for your key up front and tells you exactly what to fix if it fails.
+  In Claude.ai also allow api.elevenlabs.io under Settings -> Capabilities (code execution network access).
+- New full example: Gas Station Episode 3 (outdoor night, rain, gunshot, phone alert, sirens, original horror score).
+
 WHAT YOU GET
 - The full skill (SKILL.md) with the step-by-step workflow Claude follows.
 - prompts/gemini_director_brief_prompt.txt: paste into Gemini with your idea to get a full director's brief, then paste that into Claude.
 - scripts/analyze_reference.py: measures a reference video's lens, camera moves, colours and subtitle timing.
-- Two complete example projects: a 4-second style-match preview and a full 1:56 episode
+- Three complete example projects: a 4-second style-match preview, a full 1:56 indoor episode and a 1:25 outdoor finale
   (3D set, characters with lip-sync, camera moves, ElevenLabs voices, SFX, subtitles, end-screen choice).
 
 NOTES

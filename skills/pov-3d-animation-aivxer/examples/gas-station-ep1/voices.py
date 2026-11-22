@@ -120,7 +120,7 @@ def fit_recorded(a, lid, spk, t0, style):
     avail = max(0.5, nxt - start)
     if len(a) / SR > avail:
         f = min(1.12, (len(a) / SR) / avail)
-        tmp_in, tmp_out = '/tmp/claude-0/_in.wav', '/tmp/claude-0/_out.wav'
+        import tempfile; _td = tempfile.gettempdir(); tmp_in, tmp_out = os.path.join(_td, '_in.wav'), os.path.join(_td, '_out.wav')
         sf.write(tmp_in, a, SR)
         import subprocess; subprocess.run(['ffmpeg', '-y', '-v', 'error', '-i', tmp_in, '-af', f'atempo={f:.4f}', tmp_out], check=True)
         a, _ = sf.read(tmp_out)
