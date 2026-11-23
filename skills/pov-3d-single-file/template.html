@@ -1,0 +1,297 @@
+<!doctype html>
+<!-- POV 3D Animation — SINGLE-FILE EDITION (made by aivxer).
+     One HTML file: real 3D (three.js) toon world + ink outlines + stereographic wide lens + POV hands + characters with
+     faces and lip-flap + colour-coded subtitles + title card + end-screen choice + synthesized rain/hits + a RECORD button
+     that saves the finished video (WebM, with audio). Open it in any desktop browser (or a chat app's HTML preview/Canvas).
+     HOW TO MAKE A NEW EPISODE: edit only the sections marked  ✏️ STORY / ✏️ SET / ✏️ CAST / ✏️ SHOTS.
+     Never replace the ENGINE section with a 2D renderer. -->
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>POV 3D Episode</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@600;800;900&display=swap">
+<style>
+  html,body{margin:0;background:#0b0d12;color:#fff;font-family:Rubik,system-ui,sans-serif}
+  #wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:14px}
+  #out{width:min(405px,92vw);aspect-ratio:9/16;border-radius:14px;background:#000;box-shadow:0 10px 40px #000a}
+  #out.land{width:min(860px,94vw);aspect-ratio:16/9}
+  #gl{display:none}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  button,label.btn{font:800 15px Rubik,sans-serif;border:3px solid #111;border-radius:12px;padding:10px 16px;cursor:pointer;background:#f5d23a;color:#111;box-shadow:0 4px 0 #111}
+  button.rec{background:#e2372f;color:#fff} input[type=file]{display:none} #status{font-size:13px;color:#9aa3b5;text-align:center;max-width:520px}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head><body>
+<div id="wrap">
+  <canvas id="out"></canvas><canvas id="gl"></canvas>
+  <div class="bar">
+    <button id="play">▶ Play</button>
+    <button id="rec" class="rec">● Record video</button>
+    <label class="btn">🎙 Add voice files<input id="voices" type="file" accept="audio/*" multiple></label>
+  </div>
+  <div id="status">Voices: name your audio files after the line ids (l1.mp3, l2.mp3 …) and add them. Without files the
+    preview uses the browser voice (not recorded). Recording plays the episode once in real time, then downloads it.</div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
+
+// =====================================================================================================
+// ✏️ STORY — title card, cast colours, dialogue lines (seconds), end screen. Keep it fast: no dead air.
+// =====================================================================================================
+const STORY = {
+  aspect: '9:16',                                  // '9:16' (Reels/TikTok/Shorts) or '16:9' (YouTube)
+  duration: 22,                                    // seconds (end card included)
+  title: ['FRIDAY • 2:14 AM', 'Route 9 Gas Station'],
+  colors: { you: '#ffffff', maya: '#ff7eb6', cop: '#6fb6ff', sam: '#5fe08f', ui: '#f5d23a' },   // white=you, pink, blue, green, yellow=UI
+  lines: [   // id (voice file name), speaker, start, end, text
+    ['l1', 'you',  1.0,  3.4, 'Dead quiet tonight. Just me and the crickets.'],
+    ['l2', 'maya', 5.2,  7.6, 'Lock it! Please, hit the lock right now!'],
+    ['l3', 'you',  8.0, 10.2, 'Whoa, slow down! What is going on?'],
+    ['l4', 'maya', 10.6, 13.6, 'A car followed me for three miles. Lock the door!'],
+    ['l5', 'you',  15.2, 17.4, 'One of them is lying... or both of them are.'],
+  ],
+  freeze: 17.6,                                    // freeze frame + end screen from here
+  end: { question: 'WHAT WOULD<br>YOU DO?', green: 'UNLOCK THE DOOR', red: 'KEEP IT LOCKED', bottom: 'Comment below — Part 2 drops tomorrow.' },
+};
+
+// =====================================================================================================
+// ENGINE — do not rewrite. (three.js toon + OutlineEffect + stereographic lens pass, measured f ≈ 540 px)
+// =====================================================================================================
+const LAND = STORY.aspect === '16:9';
+const W = LAND ? 1280 : 720, H = LAND ? 720 : 1280, SRC_W = LAND ? 2400 : 1350, SRC_H = LAND ? 1350 : 2400, R_C = Math.hypot(W / 2, H / 2);
+const OUT = 0.0029, D2R = Math.PI / 180;
+const out = document.getElementById('out'); out.width = W; out.height = H; if (LAND) out.classList.add('land');
+const octx = out.getContext('2d');
+const glc = document.getElementById('gl'); glc.width = W; glc.height = H;
+const renderer = new THREE.WebGLRenderer({ canvas: glc, antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#cfccc4');
+const camera = new THREE.PerspectiveCamera(130, W / H, 0.012, 120); camera.rotation.order = 'YXZ';
+const grad = new THREE.DataTexture(new Uint8Array([196, 234, 255]), 3, 1, THREE.RedFormat); grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
+const cache = {};
+function M(c, thin) { const k = c + (thin ? 't' : ''); if (cache[k]) return cache[k]; const m = new THREE.MeshToonMaterial({ color: c, gradientMap: grad });
+  m.userData.outlineParameters = { thickness: thin ? OUT * 0.6 : OUT, color: [0.08, 0.08, 0.09], alpha: 1 }; return cache[k] = m; }
+const flat = (c, o = {}) => { const m = new THREE.MeshBasicMaterial({ color: c, ...o }); m.userData.outlineParameters = { visible: false }; return m; };
+const add = (m, p) => { (p || scene).add(m); return m; };
+const box = (w, h, d, c, x, y, z, p) => { const m = add(new THREE.Mesh(new THREE.BoxGeometry(w, h, d), typeof c === 'string' ? M(c) : c), p); m.position.set(x, y, z); return m; };
+const cyl = (r1, r2, h, c, x, y, z, p) => { const m = add(new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, 24), M(c)), p); m.position.set(x, y, z); return m; };
+const sph = (r, c, x, y, z, p) => { const m = add(new THREE.Mesh(new THREE.SphereGeometry(r, 28, 18), typeof c === 'string' ? M(c) : c), p); m.position.set(x, y, z); return m; };
+const cap = (r, l, c, p) => add(new THREE.Mesh(new THREE.CapsuleGeometry(r, l, 8, 16), M(c)), p);
+function tex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+const plane = (w, h, t, x, y, z, p) => { const m = add(new THREE.Mesh(new THREE.PlaneGeometry(w, h), flat('#fff', { map: t, transparent: true })), p); m.position.set(x, y, z); return m; };
+const glowTex = tex(128, 128, (g) => { const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, '#fff'); r.addColorStop(.25, 'rgba(255,255,255,.55)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+function glow(c, s, p) { const m = new THREE.SpriteMaterial({ map: glowTex, color: c, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }); m.userData.outlineParameters = { visible: false }; const sp = new THREE.Sprite(m); sp.scale.set(s, s, 1); return add(sp, p); }
+const effect = new OutlineEffect(renderer, { defaultThickness: OUT, defaultColor: [0.08, 0.08, 0.09] });
+const rt = new THREE.WebGLRenderTarget(SRC_W, SRC_H, { samples: 4, type: THREE.HalfFloatType });
+const lens = new THREE.ShaderMaterial({
+  uniforms: { tSrc: { value: rt.texture }, focal: { value: 540 }, res: { value: new THREE.Vector2(W, H) }, tanXY: { value: new THREE.Vector2(1, 1) },
+    wash: { value: 0 }, washCol: { value: new THREE.Color(1, 0, 0) }, vign: { value: 0 }, flash: { value: 0 } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }',
+  fragmentShader: `uniform sampler2D tSrc; uniform float focal, wash, vign, flash; uniform vec2 res, tanXY; uniform vec3 washCol; varying vec2 vUv;
+    vec3 srgb(vec3 c){ c = max(c, 0.0); return mix(c*12.92, 1.055*pow(c, vec3(1./2.4)) - 0.055, step(0.0031308, c)); }
+    void main(){ vec2 p = (vUv - 0.5) * res; float r = length(p); float th = 2.0 * atan(r / (2.0 * focal));
+      vec2 dir = r > 0.0 ? p / r : vec2(0.0); vec3 col = texture2D(tSrc, dir * tan(th) / tanXY * 0.5 + 0.5).rgb;
+      col *= mix(vec3(1.0), washCol * 2.1 + 0.12, wash); col += flash;
+      float v = smoothstep(0.35, 1.05, length(p / res * vec2(1.25, 1.0)) * 1.55); col *= 1.0 - vign * v;
+      gl_FragColor = vec4(srgb(col), 1.0); }`, depthTest: false, depthWrite: false });
+const qScene = new THREE.Scene(), qCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); qScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), lens));
+function setFocal(f) { const thc = 2 * Math.atan(R_C / (2 * f)), ty = (H / 2) / R_C * Math.tan(thc); lens.uniforms.focal.value = f; lens.uniforms.tanXY.value.set(ty * W / H, ty);
+  camera.fov = 2 * Math.atan(ty) * 180 / Math.PI; camera.updateProjectionMatrix(); }
+const sineIO = t => 0.5 - 0.5 * Math.cos(Math.PI * t), easeOut = t => 1 - Math.pow(1 - t, 3), seg = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a))), lerp = (a, b, k) => a + (b - a) * k;
+const EASE = { s: sineIO, out: easeOut, lin: t => t, snap: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2 };
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+scene.add(new THREE.AmbientLight('#f4f7ff', 2.3)); { const s = new THREE.DirectionalLight('#fff', .75); s.position.set(-1, 6, 2); scene.add(s); }
+
+// ---- characters: toon body, face (eyes/brows/mouth), arms + legs that follow simple targets
+function makePerson({ shirt = '#7f858e', pants = '#2a2e38', skin = '#e2ae8b', hair = '#2a1f1b', cap: hat = null, h = 1.0 } = {}) {
+  const root = new THREE.Group(); scene.add(root); const torso = new THREE.Group(); root.add(torso);
+  const tb = cap(0.17, 0.32, shirt, torso); tb.scale.set(1.28, 1, .85); tb.position.y = .27;
+  for (const s of [-1, 1]) { const sh = sph(.1, shirt, s * .18, .5, 0, torso); sh.scale.set(1.05, .9, 1); }
+  const head = new THREE.Group(); head.position.set(0, .73, 0); torso.add(head);
+  cyl(.045, .05, .12, skin, 0, -.08, 0, head); const hs = sph(.115, skin, 0, .03, 0, head); hs.scale.set(1, 1.08, 1);
+  const hairM = add(new THREE.Mesh(new THREE.SphereGeometry(.124, 28, 16, 0, Math.PI * 2, 0, Math.PI * .52), M(hair)), head); hairM.position.y = .045; hairM.rotation.x = -.25;
+  if (hat) { cyl(.125, .12, .08, hat, 0, .14, 0, head); const b = box(.2, .015, .12, hat, 0, .1, .1, head); }
+  const eyes = [-1, 1].map(s => { const e = new THREE.Group(); e.position.set(s * .042, .035, .113); e.rotation.y = s * .3; head.add(e);
+    add(new THREE.Mesh(new THREE.CircleGeometry(.028, 24), flat('#fff')), e); add(new THREE.Mesh(new THREE.RingGeometry(.028, .033, 28), flat('#17171b')), e);
+    const p = add(new THREE.Mesh(new THREE.CircleGeometry(.012, 16), flat('#17171b')), e); p.position.z = .001; return { e, p }; });
+  const brows = [-1, 1].map(s => { const b = cap(.0065, .036, '#1f1714', head); b.position.set(s * .045, .086, .111); b.rotation.z = Math.PI / 2; return b; });
+  sph(.014, skin, 0, .005, .116, head);
+  const mouth = add(new THREE.Mesh(new THREE.CircleGeometry(.02, 20), flat('#3a1716')), head); mouth.position.set(0, -.045, .112);
+  const limb = (r, c) => ({ a: add(new THREE.Mesh(new THREE.CylinderGeometry(r, r * .9, 1, 14), M(c))), b: add(new THREE.Mesh(new THREE.CylinderGeometry(r * .9, r * .8, 1, 14), M(c))), j: sph(r, c, 0, 0, 0) });
+  const arms = [limb(.05, shirt), limb(.05, shirt)], legs = [limb(.065, pants), limb(.065, pants)];
+  const hands = [sph(.036, skin, 0, 0, 0), sph(.036, skin, 0, 0, 0)], feet = [box(.1, .07, .22, '#1b1c20', 0, 0, 0), box(.1, .07, .22, '#1b1c20', 0, 0, 0)];
+  root.scale.setScalar(h);
+  const parts = [root, ...hands, ...feet, ...arms.flatMap(l => [l.a, l.b, l.j]), ...legs.flatMap(l => [l.a, l.b, l.j])];
+  return { root, torso, head, eyes, brows, mouth, arms, legs, hands, feet, show: v => parts.forEach(m => m.visible = v) };
+}
+function orient(m, A, B) { m.position.copy(A).add(B).multiplyScalar(.5); m.quaternion.setFromUnitVectors(V(0, 1, 0), B.clone().sub(A).normalize()); m.scale.set(1, Math.max(1e-4, A.distanceTo(B)), 1); }
+function ik(S, T, a, b, pole) { const v = T.clone().sub(S), d = Math.max(1e-4, Math.min(v.length(), (a + b) * .999)), u = v.normalize();
+  const ca = (a * a + d * d - b * b) / (2 * a * d), sa = Math.sqrt(Math.max(0, 1 - ca * ca)); const p = pole.clone().sub(u.clone().multiplyScalar(pole.dot(u))).normalize();
+  return S.clone().add(u.multiplyScalar(a * ca)).add(p.multiplyScalar(a * sa)); }
+// p = { x, z, yaw, hip(0.95 standing), lean, headYaw, headPitch, handL, handR (world V3 or null = hang), walk (0..2.6 speed), t, mouth (0..1), eyes (open 1), worry (-1..1.5) }
+function pose(P, p) {
+  P.root.position.set(p.x, 0, p.z); P.root.rotation.y = p.yaw || 0; P.torso.position.y = p.hip ?? .95; P.torso.rotation.x = p.lean || 0;
+  P.head.rotation.set(p.headPitch || 0, p.headYaw || 0, 0, 'YXZ'); P.root.updateMatrixWorld(true);
+  const L = (x, y, z) => P.torso.localToWorld(V(x, y, z)), fwd = V(0, 0, 1).transformDirection(P.root.matrixWorld), rt = V(1, 0, 0).transformDirection(P.root.matrixWorld);
+  const ph = (p.t || 0) * (p.walk > 1.5 ? 2.7 : 1.8) * Math.PI * 2, st = Math.min(.42, .18 * (p.walk || 0));
+  [-1, 1].forEach((s, i) => {
+    const S = L(s * .19, .47, 0), sw = Math.sin(ph + (s > 0 ? Math.PI : 0));
+    const T = (i ? p.handR : p.handL) || L(s * .24, -.05, 0).add(fwd.clone().multiplyScalar(-st * .8 * sw + .04));
+    const E = ik(S, T, .29, .27, rt.clone().multiplyScalar(s * .6).add(V(0, -1, 0)).add(fwd.clone().multiplyScalar(-.5)));
+    const Wr = E.clone().add(T.clone().sub(E).normalize().multiplyScalar(.27)); orient(P.arms[i].a, S, E); P.arms[i].j.position.copy(E); orient(P.arms[i].b, E, Wr); P.hands[i].position.copy(Wr);
+    const Hp = L(s * .09, -.02, 0), base = P.root.position.clone().add(rt.clone().multiplyScalar(s * .1 * P.root.scale.x));
+    const F = base.add(fwd.clone().multiplyScalar(st * Math.sin(ph + (s > 0 ? Math.PI : 0)))).add(V(0, Math.max(0, Math.cos(ph + (s > 0 ? Math.PI : 0))) * .12 * Math.min(1, p.walk || 0), 0));
+    const K = ik(Hp, F, .44, .43, fwd.clone().add(V(0, .2, 0))); orient(P.legs[i].a, Hp, K); P.legs[i].j.position.copy(K); orient(P.legs[i].b, K, F); P.feet[i].position.copy(F).add(fwd.clone().multiplyScalar(.05)); P.feet[i].position.y = .035 + F.y; P.feet[i].rotation.y = p.yaw || 0;
+  });
+  const open = p.eyes ?? 1, w = p.worry || 0, mo = Math.min(1, .08 + (p.mouth || 0));
+  P.eyes.forEach((E, i) => { E.e.scale.y = Math.max(.15, open); E.p.position.set((p.gx || 0) * .012, (p.gy || 0) * .01, .001); P.brows[i].position.y = .088 + .012 * w; P.brows[i].rotation.z = Math.PI / 2 + (i ? 1 : -1) * .42 * w; });
+  P.mouth.scale.set(1 - .2 * mo, .18 + mo * .95, 1);
+}
+// ---- POV hands (attached to the camera): pose 'rest' | 'press' | 'up' | 'hidden'
+const SKIN = '#d9a079', hands = [-1, 1].map(s => { const g = new THREE.Group(); scene.add(g); const palm = sph(.043, SKIN, 0, 0, 0, g); palm.scale.set(1.05, .55, 1.15);
+  for (let i = 0; i < 4; i++) { const f = cap(.0105, .045, SKIN, g); f.rotation.x = Math.PI / 2; f.position.set(s * (-.029 + i * .0195), -.004, -.06); }
+  return g; });
+const sleeves = [0, 1].map(() => add(new THREE.Mesh(new THREE.CylinderGeometry(.055, .065, 1, 16), M('#1f3460'))));
+// kind: 'rest' | 'up' | 'hidden' | 'reach' (right hand to a world point `target`, e.g. a button or a door handle)
+function povHands(kind, t, target) {
+  hands.forEach((g, i) => { const s = i ? 1 : -1; const vis = kind !== 'hidden'; g.visible = sleeves[i].visible = vis; if (!vis) return;
+    const tr = .003 * Math.sin(t * 40 + i);
+    let P = (kind === 'up' ? V(s * .16, -.08 + tr, -.33) : V(s * .22, -.42, -.3)).applyMatrix4(camera.matrixWorld);
+    if (kind === 'reach' && i && target) P = target.clone().add(V(0, .045, .05));
+    g.position.copy(P); g.quaternion.copy(camera.quaternion); g.rotateX(kind === 'up' ? 1.2 : kind === 'reach' && i ? -1.0 : -.35);
+    const sh = V(s * .19, -.3, .05).applyMatrix4(camera.matrixWorld), wr = g.localToWorld(V(0, .01, .06));
+    orient(sleeves[i], sh, sh.clone().lerp(wr, .78)); });
+}
+// ---- camera keys: K(t0, t1, {yaw, pitch, x, y, z, f}, ease) — still → smooth eased move → dead hold → slow drift → fast snap
+const KEYS = []; const K = (t0, t1, v, e = 's') => KEYS.push({ t0, t1, v, e });
+function camAt(t, start) { const c = { ...start }; for (const k of KEYS) { if (t < k.t0) break; const pv = { ...c }, kk = EASE[k.e](seg(t, k.t0, k.t1)); for (const key in k.v) c[key] = lerp(pv[key], k.v[key], kk); } return c; }
+const SHAKES = []; const shake = (t0, amp) => SHAKES.push([t0, amp]);
+
+// =====================================================================================================
+// ✏️ SET — build the location with boxes/cylinders/spheres + canvas textures (toon colours, ink outlines are automatic)
+// =====================================================================================================
+const EYE = 1.62, CT = .98;
+function buildSet() {
+  const floor = add(new THREE.Mesh(new THREE.PlaneGeometry(12, 12), M('#d5d7d0'))); floor.rotation.x = -Math.PI / 2; floor.position.z = -3;
+  box(12, .05, 12, '#cfccc4', 0, 3.0, -3);                                         // ceiling
+  for (const z of [-1, -3, -5]) { box(1.2, .03, .6, '#fbfaf0', -1.2, 2.97, z); box(1.2, .03, .6, '#fbfaf0', 1.4, 2.97, z); }
+  box(.1, 3, 12, '#ebe6d8', -4.6, 1.5, -3); box(.1, 3, 12, '#ebe6d8', 3.6, 1.5, -3); box(8.2, .16, .1, '#d2483c', -.5, 2.6, -7.05);
+  const rain = tex(512, 256, (g, w, h) => { g.fillStyle = '#0a0d14'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(190,210,240,.35)'; for (let i = 0; i < 160; i++) { const x = Math.random() * w, y = Math.random() * h; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 3, y + 16); g.stroke(); } });
+  plane(8.2, 2.3, rain, -.5, 1.45, -7.0);                                           // night through the front glass
+  for (const x of [-4.4, -2.2, 0, 1.2, 3.4]) box(.08, 2.3, .08, '#b9bec7', x, 1.45, -6.98);
+  SET.door = new THREE.Group(); SET.door.position.set(.12, 0, -6.95); scene.add(SET.door); box(1.0, 2.2, .04, flat('#9fb4cc', { transparent: true, opacity: .25 }), .5, 1.1, 0, SET.door); box(1.0, .08, .06, '#b9bec7', .5, 2.2, 0, SET.door); box(.06, .3, .06, '#c9ccd2', .9, 1.1, .05, SET.door);
+  const sign = tex(512, 128, (g, w) => { g.fillStyle = '#d8d2c2'; g.fillRect(0, 0, w, 128); g.fillStyle = '#1f3460'; g.font = '900 72px Rubik'; g.textAlign = 'center'; g.fillText('OPEN 24/7', w / 2, 92); });
+  plane(1.0, .25, sign, -1.8, 2.3, -6.95);
+  for (const [x, c] of [[-3.2, '#e33b2f'], [-2.3, '#2f73d8']]) { box(.7, 1.6, 3, '#9aa1ab', x, .8, -3.4); for (let r = 0; r < 4; r++) box(.72, .25, 2.9, c, x, .35 + r * .38, -3.4); }
+  box(3.4, CT, .7, '#2e3b55', .2, CT / 2, -.45); box(3.5, .05, .8, '#7d828c', .2, CT, -.45);   // counter
+  SET.btn = cyl(.035, .035, .025, '#e2372f', .18, CT + .03, -.3); SET.btnBase = box(.12, .02, .12, '#2a2d34', .18, CT + .01, -.3);
+  SET.red = glow('#ff2a2a', 3, null); SET.red.position.set(2.5, 1.2, -9); SET.blue = glow('#2a5bff', 3, null); SET.blue.position.set(.8, 1.2, -9);
+}
+const SET = {};
+
+// =====================================================================================================
+// ✏️ CAST — create characters (makePerson colours) and animate them per time in castAt(t)
+// =====================================================================================================
+const CAST = {};
+function buildCast() { CAST.maya = makePerson({ shirt: '#7f858e', pants: '#2a2e38', skin: '#e2ae8b', hair: '#2a1f1b' }); }
+function castAt(t, mouthOf) {
+  const enter = seg(t, 4.0, 6.0), door = V(.6, 0, -6.6), spot = V(.5, 0, -1.25);
+  const p = door.clone().lerp(spot, sineIO(enter));
+  const look = Math.atan2(camera.position.x - p.x, camera.position.z - p.z);
+  pose(CAST.maya, { x: p.x, z: p.z, yaw: look, hip: .95 - (enter < 1 ? .03 * Math.abs(Math.sin(t * 17)) : 0), lean: enter < 1 ? .3 : .08, walk: enter > 0 && enter < 1 ? 2.6 : 0, t,
+    handL: enter >= 1 ? CAST.maya.torso.localToWorld(V(-.2, .55, .3)) : null, handR: enter >= 1 ? CAST.maya.torso.localToWorld(V(.2, .55, .3)) : null,
+    mouth: mouthOf('maya'), eyes: 1.15, worry: 1.2, headPitch: -.1 });
+  CAST.maya.show(t > 3.8);
+}
+
+// =====================================================================================================
+// ✏️ SHOTS — camera keys, POV hand poses, lights/flashes per time (match the dialogue)
+// =====================================================================================================
+const START = { yaw: 0, pitch: -6, x: 0, y: EYE, z: .2, f: 560 };
+K(0, 3.6, { yaw: -4, f: 540 }, 'lin');                         // slow drift on the empty store
+K(4.0, 4.35, { yaw: 2, pitch: -2, f: 600 }, 'snap');           // snap to the door as she bursts in
+K(6.1, 6.6, { pitch: -4, f: 640 });                            // push in on her
+K(13.8, 14.2, { yaw: 9, pitch: -40, f: 560 }, 'snap');          // down to the lock button
+K(15.0, 15.6, { yaw: 0, pitch: -3, f: 600 });
+shake(4.0, 1.5); shake(14.6, 1.0);
+function shotsAt(t) {
+  povHands(t > 14.0 && t < 15.0 ? 'reach' : 'rest', t, SET.btn.position);
+  SET.door.rotation.y = t > 4.0 && t < 6.5 ? -1.2 * Math.sin(seg(t, 4.0, 6.5) * Math.PI) : 0;
+  SET.btn.position.y = CT + .03 - (t > 14.55 && t < 14.8 ? .012 : 0);
+  const ph = (t * 2.1) % 1, on = t > 10.6; SET.red.material.opacity = on && ph < .5 ? 1 : .05; SET.blue.material.opacity = on && ph >= .5 ? 1 : .05;
+  lens.uniforms.wash.value = on ? .2 : 0; lens.uniforms.washCol.value.set(ph < .5 ? '#ff2020' : '#2050ff');
+  lens.uniforms.flash.value = t > 4.0 && t < 4.12 ? .1 : 0;
+}
+
+// =====================================================================================================
+// ENGINE: playback, HUD, audio, recording — do not rewrite
+// =====================================================================================================
+buildSet(); buildCast();
+const chunks = []; for (const [id, spk, t0, t1, text] of STORY.lines) { const ws = text.split(/\s+/); const g = []; let cur = []; for (const w of ws) { cur.push(w); if (cur.length >= 3 || /[.!?,]$/.test(w)) { g.push(cur.join(' ')); cur = []; } } if (cur.length) g.push(cur.join(' '));
+  const tot = g.reduce((a, c) => a + c.length + 3, 0); let c0 = t0; for (const c of g) { const d = (t1 - t0) * (c.length + 3) / tot; chunks.push({ t0: c0, t1: c0 + d, text: c, spk, id }); c0 += d; } }
+const voiceBuf = {}; let actx = null;
+const env = {}; // per-speaker mouth envelope sampled from the voice files (else a talking flap)
+function mouthOf(spk) { const t = NOW; const l = STORY.lines.find(l => l[1] === spk && t >= l[2] && t <= l[3]); if (!l) return 0; const b = voiceBuf[l[0]];
+  if (b && env[l[0]]) { const i = Math.floor((t - l[2]) * 30); return env[l[0]][i] || 0; } return .45 + .45 * Math.sin(t * 22) * Math.sin(t * 9.3); }
+let NOW = 0;
+function hud(t) {
+  const c = octx; c.save();
+  const font = (w, s) => `${w} ${s}px Rubik, system-ui, sans-serif`, stroke = (txt, x, y, s, col, sw) => { c.lineJoin = 'round'; c.lineWidth = sw; c.strokeStyle = '#111'; c.strokeText(txt, x, y); c.fillStyle = col; c.fillText(txt, x, y); };
+  const a = easeOut(seg(t, .15, .55)) * (1 - seg(t, 4.0, 4.4));
+  if (a > 0) { c.globalAlpha = a; c.textAlign = 'left'; c.font = font(900, 36); stroke(STORY.title[0], 42, 130, 36, STORY.colors.ui, 7); c.font = font(800, 22); stroke(STORY.title[1], 42, 162, 22, '#fff3c4', 5); c.globalAlpha = 1; }
+  const s = chunks.find(k => t >= k.t0 && t < k.t1);
+  if (s && t < STORY.freeze + .3) { const k = .91 + .09 * easeOut(seg(t, s.t0, s.t0 + .1)); c.translate(W / 2, H * .68); c.scale(k, k); c.textAlign = 'center'; c.font = font(800, LAND ? 40 : 44.5); stroke(s.text, 0, 0, 44, STORY.colors[s.spk] || '#fff', 9); c.setTransform(1, 0, 0, 1, 0, 0); }
+  if (t > STORY.freeze + .1) {
+    const k = easeOut(seg(t, STORY.freeze + .1, STORY.freeze + .5)); c.globalAlpha = k; c.textAlign = 'center';
+    const qy = H * .38; STORY.end.question.split('<br>').forEach((q, i) => { c.font = font(900, 54); stroke(q, W / 2, qy + i * 58, 54, '#fff', 10); });
+    const btn = (txt, y, col, dot) => { const bw = 520, bh = 92, x = W / 2 - bw / 2; c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.roundRect(x, y + 9, bw, bh, 20); c.fill();
+      c.fillStyle = col; c.strokeStyle = '#0d0e12'; c.lineWidth = 4; c.beginPath(); c.roundRect(x, y, bw, bh, 20); c.fill(); c.stroke();
+      c.fillStyle = dot; c.beginPath(); c.arc(x + 46, y + bh / 2, 15, 0, 7); c.fill(); c.stroke(); c.font = font(900, 34); c.fillStyle = '#fff'; c.fillText(txt, W / 2 + 18, y + bh / 2 + 12); };
+    btn(STORY.end.green, qy + 150, '#2fae55', '#7dffa0'); c.font = font(900, 30); stroke('OR', W / 2, qy + 290, 30, STORY.colors.ui, 6); btn(STORY.end.red, qy + 310, '#d8352d', '#ff8a80');
+    c.font = font(800, 30); stroke(STORY.end.bottom, W / 2, qy + 500, 30, STORY.colors.ui, 6); c.globalAlpha = 1;
+  }
+  c.restore();
+}
+function frame(tReal) {
+  NOW = Math.min(tReal, STORY.freeze); const t = NOW;
+  const c = camAt(t, START);
+  for (const [t0, a] of SHAKES) if (t > t0 && t < t0 + .45) { const d = t - t0; c.yaw += a * Math.exp(-d * 11) * Math.sin(d * 55); c.pitch += a * .7 * Math.exp(-d * 11) * Math.cos(d * 47); }
+  camera.position.set(c.x, c.y, c.z); camera.rotation.set(c.pitch * D2R, c.yaw * D2R, (c.roll || 0) * D2R); camera.updateMatrixWorld(); setFocal(c.f);
+  castAt(t, mouthOf); shotsAt(t);
+  lens.uniforms.vign.value = .85 * easeOut(seg(tReal, STORY.freeze - .15, STORY.freeze + .4));
+  renderer.setRenderTarget(rt); effect.render(scene, camera); renderer.setRenderTarget(null); renderer.render(qScene, qCam);
+  octx.drawImage(glc, 0, 0); hud(tReal);
+}
+// ---- audio: voice files + synthesized rain bed and hits (all routed into the recording)
+function ensureAudio() { if (!actx) actx = new AudioContext(); return actx; }
+document.getElementById('voices').onchange = async e => { const ac = ensureAudio(); let n = 0;
+  for (const f of e.target.files) { const id = f.name.replace(/\.[^.]+$/, '').toLowerCase(); try { const b = await ac.decodeAudioData(await f.arrayBuffer()); voiceBuf[id] = b; n++;
+    const d = b.getChannelData(0), hop = Math.floor(b.sampleRate / 30), e2 = []; let mx = 1e-6; for (let i = 0; i < d.length; i += hop) { let s = 0; for (let j = i; j < Math.min(d.length, i + hop); j++) s += d[j] * d[j]; const v = Math.sqrt(s / hop); e2.push(v); mx = Math.max(mx, v); } env[id] = e2.map(v => Math.min(1, v / mx * 1.6)); } catch (err) { console.warn(f.name, err); } }
+  document.getElementById('status').textContent = `Loaded ${n} voice file(s): ${Object.keys(voiceBuf).join(', ')}`; };
+function scheduleAudio(ac, dest, t0) {
+  const len = STORY.duration, nb = ac.createBuffer(2, ac.sampleRate * len, ac.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = nb.getChannelData(ch); let lp = 0; for (let i = 0; i < d.length; i++) { lp += .07 * ((Math.random() * 2 - 1) - lp); d[i] = lp * .55; } }
+  const rain = ac.createBufferSource(); rain.buffer = nb; const rg = ac.createGain(); rg.gain.value = .5; rain.connect(rg).connect(dest); rain.start(t0);
+  const hit = (at, f = 60, g = .9) => { const o = ac.createOscillator(), gg = ac.createGain(); o.frequency.setValueAtTime(f, t0 + at); o.frequency.exponentialRampToValueAtTime(f * .5, t0 + at + .4); gg.gain.setValueAtTime(g, t0 + at); gg.gain.exponentialRampToValueAtTime(.001, t0 + at + .6); o.connect(gg).connect(dest); o.start(t0 + at); o.stop(t0 + at + .7); };
+  for (const [ts] of SHAKES) hit(ts); hit(STORY.freeze, 40, 1.2);
+  for (const [id, spk, s] of STORY.lines) { const b = voiceBuf[id]; if (!b) continue; const src = ac.createBufferSource(); src.buffer = b; const g = ac.createGain(); g.gain.value = 1.6; src.connect(g).connect(dest); src.start(t0 + s); }
+}
+let playing = false;
+function run(record) {
+  if (playing) return; playing = true; const ac = ensureAudio(); ac.resume();
+  const mix = ac.createGain(); mix.connect(ac.destination); let rec = null, parts = [];
+  if (record) { const sd = ac.createMediaStreamDestination(); mix.connect(sd); const st = out.captureStream(30); sd.stream.getAudioTracks().forEach(tr => st.addTrack(tr));
+    const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m));
+    rec = new MediaRecorder(st, { mimeType: mime, videoBitsPerSecond: 8e6 }); rec.ondataavailable = e => e.data.size && parts.push(e.data);
+    rec.onstop = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(parts, { type: 'video/webm' })); a.download = 'pov_episode.webm'; a.click(); document.getElementById('status').textContent = 'Saved pov_episode.webm — convert to MP4 in any free converter (or CapCut) if your app needs MP4.'; };
+    rec.start(); }
+  const t0 = ac.currentTime + .15; scheduleAudio(ac, mix, t0);
+  const hasVoice = Object.keys(voiceBuf).length > 0, said = new Set();
+  const tick = () => { const t = ac.currentTime - t0; frame(Math.max(0, t));
+    if (!record && !hasVoice && 'speechSynthesis' in window) for (const [id, , s, , text] of STORY.lines) if (t >= s && !said.has(id)) { said.add(id); speechSynthesis.speak(new SpeechSynthesisUtterance(text)); }
+    if (t < STORY.duration) requestAnimationFrame(tick); else { playing = false; if (rec) rec.stop(); mix.disconnect(); } };
+  requestAnimationFrame(tick);
+}
+document.getElementById('play').onclick = () => run(false);
+document.getElementById('rec').onclick = () => run(true);
+window.renderAt = t => frame(t);                    // for automated checks: renderAt(seconds) draws one frame
+document.fonts.ready.then(() => frame(0.8));
+</script></body></html>
