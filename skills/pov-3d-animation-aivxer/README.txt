@@ -20,6 +20,7 @@ NEW IN v3 (fixes)
 
 WHAT YOU GET
 - The full skill (SKILL.md) with the step-by-step workflow Claude follows.
+- prompts/viral_thriller_director_prompt.txt (BONUS): the Viral POV Thriller script prompt — paste into ChatGPT/Gemini/Claude, give a topic, get a full 1:50 shot-by-shot brief with a 50-50 twist and a 🟢/🔴 cliffhanger; reply "PART 2: [option]" for the next episode.
 - prompts/gemini_director_brief_prompt.txt: paste into Gemini with your idea to get a full director's brief, then paste that into Claude.
 - scripts/analyze_reference.py: measures a reference video's lens, camera moves, colours and subtitle timing.
 - Three complete example projects: a 4-second style-match preview, a full 1:56 indoor episode and a 1:25 outdoor finale

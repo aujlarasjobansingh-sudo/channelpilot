@@ -32,7 +32,7 @@ reference video, from a topic ("a POV horror short about a night-shift cashier")
     `python3 -c "import os;open(os.path.expanduser('~/.elevenlabs_key'),'w').write(input())"` — never echo it, never
     write it into project files, outputs or zips.
   - Free ElevenLabs plans can only use default voices over the API and don't allow commercial use — say so.
-- **Story:** their topic, a reference video, or a director's brief (offer `prompts/gemini_director_brief_prompt.txt`).
+- **Story:** their topic, a reference video, or a director's brief (offer `prompts/viral_thriller_director_prompt.txt` — the viral 6-stage script prompt — or `prompts/gemini_director_brief_prompt.txt`).
 
 ## Setup (once per session, ~2 minutes)
 ```bash
