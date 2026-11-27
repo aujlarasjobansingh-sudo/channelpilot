@@ -6,7 +6,7 @@ And everything you're about to see, I made myself. No animator, no After Effects
 
 On top of that, I'm giving you two things for free. First, the exact skill I built to make these animations, so you can plug it in and use it today. Second, a niche that has huge demand and almost no competition right now. Both links are in the description. Stay until the end, because I'll show you the one mistake that almost ruined my first video.
 
-The whole process is five steps. Idea, script, voiceover, animation, and the final edit. For the animation, I'll show you two ways to do it: one with Claude, which is what I used for my main video, and one with Gemini. The steps are almost identical, so use whichever tool you already have.
+The whole process is five steps. Idea, script, voiceover, animation, and the final edit. For the animation, I used Claude, and I'll show you every step.
 
 Step one is the idea. Before anything else, I asked Claude to read through YouTube's current rules for faceless channels. In 2026, YouTube is strict about inauthentic and low-effort content, and if your videos look mass-produced, you won't get monetized. Then I gave it my concept: "In This World" stories. Second-person POV videos, like the viral "In this town" videos you've probably seen, where every episode drops the viewer into a brand-new world and makes them the main character.
 
@@ -22,7 +22,7 @@ Here's a pro tip: ask it to split the script into parts of under five thousand c
 
 Step three is the voiceover. I used ElevenLabs. For storytelling, a deep, calm English voice works best. I went with [voice name]. Generate each part separately and download the MP3s. One warning: if you want to monetize, get a paid ElevenLabs plan. The free plan doesn't allow commercial use.
 
-Step four is where the magic happens: the animation. Let's start with Claude.
+Step four is where the magic happens: the animation, made with Claude.
 
 First, download my free skill from the description and upload it in the skills section of Claude's settings. Now Claude knows exactly how to draw this ink-line 2D style: round-headed characters, thick black outlines, moody lighting, and a camera that never stops moving.
 
@@ -39,14 +39,6 @@ When you have the next voiceover, upload it and say: "Make part two and join it 
 Here's the result I got from Claude.
 
 All of that was generated with code. No drawing, no animator.
-
-Now, if you don't have Claude, here's how to do it with Gemini. The steps are the same; only the place you do them changes.
-
-In Gemini, [where you set it up], and paste in the instructions from my free skill. Then, exactly like before, give it your reference and ask for a ten-second preview first. Once the style looks right, give it your voiceover and the same sync instruction: transcribe with word timestamps and lock every shot to the first word of its sentence. Then [how you got the final video out of Gemini].
-
-And here's the result from Gemini.
-
-[Your honest comparison: what Gemini did better, and what Claude did better.] Both tools get the job done, so use whichever one you have.
 
 Now, the mistake I promised to show you. In my first version, the voice was running ahead and the scenes were showing up late. In one spot, the gap was seven seconds. The reason was that the scenes had been timed by guessing from the pauses in the voiceover. The fix is simple: always have the AI transcribe your voiceover with word timestamps first, and lock each scene to the first word of its sentence. Remember that one line, and your videos will never go out of sync.
 
