@@ -1,0 +1,55 @@
+Look at this channel. Its videos are pulling [X] views, and there's no face, no studio, no voice actor on camera. Just 2D animation. I searched all of YouTube for a tutorial on how this style is made, and I couldn't find a single one. So today, I'm revealing the whole thing, step by step, from the first idea to the final video.
+
+And everything you're about to see, I made myself. No animator, no After Effects. Just AI.
+
+On top of that, I'm giving you two things for free. First, the exact skill I built to make these animations, so you can plug it in and use it today. Second, a niche that has huge demand and almost no competition right now. Both links are in the description. Stay until the end, because I'll show you the one mistake that almost ruined my first video.
+
+The whole process is five steps. Idea, script, voiceover, animation, and the final edit. For the animation, I'll show you two ways to do it: one with Claude, which is what I used for my main video, and one with Gemini. The steps are almost identical, so use whichever tool you already have.
+
+Step one is the idea. Before anything else, I asked Claude to read through YouTube's current rules for faceless channels. In 2026, YouTube is strict about inauthentic and low-effort content, and if your videos look mass-produced, you won't get monetized. Then I gave it my concept: "In This World" stories. Second-person POV videos, like the viral "In this town" videos you've probably seen, where every episode drops the viewer into a brand-new world and makes them the main character.
+
+One important thing: I didn't copy any anime plot. The world has an anime feel, but the story, the names, the hero ranks and the monsters are all original. That keeps you safe from copyright problems, and it's what makes the channel yours.
+
+And that's the free niche: [your niche]. Right now, nobody is making high-quality 2D animation for it.
+
+Step two is the script. I gave Claude a few clear rules. Open with a "What happens if you…" hook and don't reveal anything. Ask viewers to subscribe right after the hook. Explain how the world works early on. Tell the full story in our own style. And at the end, ask viewers which world they want next.
+
+Claude started by building a world bible: the city, the hero ranks from Iron all the way up to Crown, the monster threat levels, and the main characters. Then it wrote a twenty to thirty minute narration based on that. The exact prompt is in the description.
+
+Here's a pro tip: ask it to split the script into parts of under five thousand characters. That's how much ElevenLabs accepts in one go, and making the video part by part is much easier.
+
+Step three is the voiceover. I used ElevenLabs. For storytelling, a deep, calm English voice works best. I went with [voice name]. Generate each part separately and download the MP3s. One warning: if you want to monetize, get a paid ElevenLabs plan. The free plan doesn't allow commercial use.
+
+Step four is where the magic happens: the animation. Let's start with Claude.
+
+First, download my free skill from the description and upload it in the skills section of Claude's settings. Now Claude knows exactly how to draw this ink-line 2D style: round-headed characters, thick black outlines, moody lighting, and a camera that never stops moving.
+
+Next, show Claude a reference for the look you want, and tell it: "Make 2D animation in this style. I want movement in every scene, and it should feel hand-drawn."
+
+Don't ask for the full video right away. Ask for a ten-second preview first. My first preview was fine, but it didn't feel premium. So I told it: "Make it more premium. Make the characters look better. If someone is sleeping, it should look good. Make the fight scenes look good." And look at the difference. The blanket rises and falls as he breathes, the punches get real impact frames, and everything has that soft film grain.
+
+Once you're happy with the style, upload your voiceover and ask for the full part. Tell it to transcribe the voiceover with word timestamps first, and to start every shot on the first word of its sentence. Claude creates a separate scene for each sentence. My first part alone had around a hundred shots.
+
+Before the final render, ask Claude to pull one frame from every sentence and check that what's on screen matches what the voice is saying. That one instruction fixes half your problems before they happen.
+
+When you have the next voiceover, upload it and say: "Make part two and join it to part one. Don't remake part one." And that's it. Your full episode is ready.
+
+Here's the result I got from Claude.
+
+All of that was generated with code. No drawing, no animator.
+
+Now, if you don't have Claude, here's how to do it with Gemini. The steps are the same; only the place you do them changes.
+
+In Gemini, [where you set it up], and paste in the instructions from my free skill. Then, exactly like before, give it your reference and ask for a ten-second preview first. Once the style looks right, give it your voiceover and the same sync instruction: transcribe with word timestamps and lock every shot to the first word of its sentence. Then [how you got the final video out of Gemini].
+
+And here's the result from Gemini.
+
+[Your honest comparison: what Gemini did better, and what Claude did better.] Both tools get the job done, so use whichever one you have.
+
+Now, the mistake I promised to show you. In my first version, the voice was running ahead and the scenes were showing up late. In one spot, the gap was seven seconds. The reason was that the scenes had been timed by guessing from the pauses in the voiceover. The fix is simple: always have the AI transcribe your voiceover with word timestamps first, and lock each scene to the first word of its sentence. Remember that one line, and your videos will never go out of sync.
+
+So that's the full process. The free skill and the niche are both linked in the description. Download them, try them out, and drop a link to your first video in the comments. I'll check it out.
+
+And tell me in the comments which style you want a tutorial on next.
+
+If this helped, like the video and subscribe. See you in the next one.
