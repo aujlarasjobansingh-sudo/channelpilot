@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: Rubik; font-weight: 500; src: url(node_modules/@fontsource/rubik/files/rubik-latin-500-normal.woff2); }
+  @font-face { font-family: Rubik; font-weight: 600; src: url(node_modules/@fontsource/rubik/files/rubik-latin-600-normal.woff2); }
+  @font-face { font-family: Rubik; font-weight: 700; src: url(node_modules/@fontsource/rubik/files/rubik-latin-700-normal.woff2); }
+  @font-face { font-family: Rubik; font-weight: 800; src: url(node_modules/@fontsource/rubik/files/rubik-latin-800-normal.woff2); }
+  @font-face { font-family: Rubik; font-weight: 900; src: url(node_modules/@fontsource/rubik/files/rubik-latin-900-normal.woff2); }
+  html, body { margin: 0; padding: 0; background: #000; }
+  #stage { position: relative; width: 720px; height: 1280px; overflow: hidden; }
+  canvas { display: block; }
+  .hud { position: absolute; inset: 0; pointer-events: none; font-family: Rubik, sans-serif; }
+  /* top-left time/location (yellow UI per brief) */
+  #title { position: absolute; left: 42px; top: 98px; }
+  #title .l1 { font-weight: 900; font-size: 36px; color: #f5d23a; letter-spacing: 0.3px;
+    -webkit-text-stroke: 7px #111; paint-order: stroke fill; }
+  #title .l2 { font-weight: 800; font-size: 22px; color: #fff3c4; margin-top: 4px;
+    -webkit-text-stroke: 5px #111; paint-order: stroke fill; }
+  /* phone notification cards */
+  #cards { position: absolute; left: 50%; top: 92px; width: 580px; margin-left: -290px; }
+  .card { position: absolute; left: 0; width: 100%; box-sizing: border-box;
+    background: rgba(18, 21, 29, 0.95); border: 3px solid #0b0c10; border-radius: 26px; padding: 18px 22px 20px;
+    box-shadow: 0 10px 0 rgba(0,0,0,0.28); }
+  .card .row { display: flex; align-items: center; gap: 12px; }
+  .card .av { width: 40px; height: 40px; border-radius: 50%; background: #f5d23a; color: #14161d; font-weight: 800;
+    font-size: 22px; display: flex; align-items: center; justify-content: center; border: 2px solid #0b0c10; }
+  .card .name { color: #fff; font-weight: 700; font-size: 25px; flex: 1; }
+  .card .time { color: #9aa3b5; font-weight: 600; font-size: 20px; }
+  .card .msg { color: #f5d23a; font-weight: 700; font-size: 29px; line-height: 1.22; margin-top: 10px; }
+  .card.alert { background: rgba(28, 12, 12, 0.96); border-color: #e2372f; }
+  .card.alert .hdr { color: #ff4a3d; font-weight: 900; font-size: 27px; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; }
+  .tri { width: 0; height: 0; border-left: 17px solid transparent; border-right: 17px solid transparent; border-bottom: 30px solid #f5d23a; position: relative; }
+  .tri::after { content: '!'; position: absolute; left: -4px; top: 6px; color: #1a1a1a; font-weight: 900; font-size: 20px; }
+  /* end screen */
+  #cta { position: absolute; inset: 0; display: none; }
+  #cta .q { position: absolute; top: 470px; width: 100%; text-align: center; color: #fff; font-weight: 900; font-size: 54px; line-height: 1.05;
+    -webkit-text-stroke: 8px #111; paint-order: stroke fill; text-shadow: 0 4px 0 rgba(0,0,0,0.4); }
+  #cta .btn { position: absolute; left: 50%; width: 520px; margin-left: -260px; height: 92px; border-radius: 20px; border: 4px solid #0d0e12;
+    display: flex; align-items: center; justify-content: center; gap: 18px; color: #fff; font-weight: 900; font-size: 36px; letter-spacing: 0.5px;
+    box-shadow: 0 9px 0 rgba(0,0,0,0.45); -webkit-text-stroke: 2px rgba(0,0,0,0.35); }
+  #cta .dot { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #0d0e12; }
+  #cta .g { top: 640px; background: #2fae55; } #cta .g .dot { background: #7dffa0; }
+  #cta .r { top: 790px; background: #d8352d; } #cta .r .dot { background: #ff8a80; }
+  #cta .or { position: absolute; top: 742px; width: 100%; text-align: center; color: #f5d23a; font-weight: 900; font-size: 30px; -webkit-text-stroke: 5px #111; paint-order: stroke fill; }
+  #cta .bottom { position: absolute; top: 1010px; left: 40px; right: 40px; text-align: center; color: #f5d23a; font-weight: 800; font-size: 31px; line-height: 1.25;
+    -webkit-text-stroke: 6px #111; paint-order: stroke fill; }
+  /* subtitles: WHITE = you, PINK = Maya, BLUE = officer */
+  #sub { position: absolute; top: 839px; left: 0; width: 100%; height: 70px; }
+  #sub span { position: absolute; left: 50%; top: 0; transform: translateX(-50%); white-space: nowrap;
+    font-weight: 800; font-size: 44.5px; letter-spacing: 0.2px;
+    -webkit-text-stroke: 6px #141414; paint-order: stroke fill; text-shadow: 0 3px 0 rgba(0,0,0,0.45); }
+  .you { color: #ffffff; } .maya { color: #ff7eb6; } .cop { color: #6fb6ff; } .car { color: #5fe08f; } .marcus { color: #6fb6ff; } .chloe { color: #ff7eb6; } .pa { color: #ff4d4d; } .radio { color: #ff4d4d; } .ui { color: #f5d23a; }
+  #cta { position: absolute; inset: 0; display: none; }
+  #cta .q { position: absolute; top: 430px; width: 100%; text-align: center; color: #fff; font-weight: 900; font-size: 54px; line-height: 1.05; -webkit-text-stroke: 8px #111; paint-order: stroke fill; }
+  #cta .btn { position: absolute; left: 50%; width: 560px; margin-left: -280px; height: 112px; border-radius: 20px; border: 4px solid #0d0e12; display: flex; align-items: center; justify-content: center; gap: 18px; color: #fff; font-weight: 900; font-size: 31px; line-height: 1.1; text-align: center; box-shadow: 0 9px 0 rgba(0,0,0,0.45); -webkit-text-stroke: 2px rgba(0,0,0,0.35); }
+  #cta .dot { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #0d0e12; flex: none; }
+  #cta .g { top: 600px; background: #2fae55; } #cta .g .dot { background: #7dffa0; }
+  #cta .r { top: 780px; background: #d8352d; } #cta .r .dot { background: #ff8a80; }
+  #cta .or { position: absolute; top: 727px; width: 100%; text-align: center; color: #f5d23a; font-weight: 900; font-size: 30px; -webkit-text-stroke: 5px #111; paint-order: stroke fill; }
+  #cta .bottom { position: absolute; top: 960px; left: 40px; right: 40px; text-align: center; color: #f5d23a; font-weight: 800; font-size: 31px; line-height: 1.25; -webkit-text-stroke: 6px #111; paint-order: stroke fill; }
+  #black { position: absolute; inset: 0; background: #000; opacity: 0; }
+  #end { position: absolute; inset: 0; display: none; }
+  #end .e1 { position: absolute; top: 520px; width: 100%; text-align: center; color: #f5d23a; font-weight: 900; font-size: 66px; letter-spacing: 1px;
+    -webkit-text-stroke: 8px #111; paint-order: stroke fill; }
+  #end .e2 { position: absolute; top: 700px; left: 40px; right: 40px; text-align: center; color: #fff; font-weight: 800; font-size: 40px; line-height: 1.3;
+    -webkit-text-stroke: 6px #111; paint-order: stroke fill; }
+  #end .e2 span { color: #5fe08f; }
+  #rainfx { position: absolute; left: 0; top: 0; width: 720px; height: 1280px; pointer-events: none; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "./node_modules/three/build/three.module.js",
+               "three/addons/": "./node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" width="720" height="1280"></canvas>
+  <canvas id="rainfx" width="720" height="1280"></canvas>
+  <div class="hud" id="hud">
+    <div id="title"><div class="l1">TUESDAY • 1:48 PM</div><div class="l2">Oakridge High — 2nd Floor Library</div></div>
+    <div id="cards"></div>
+    <div id="cta"><div class="q">WHAT DO<br>YOU DO?</div>
+      <div class="btn g"><div class="dot"></div>OPEN THE DOOR<br>FOR CHLOE</div><div class="or">OR</div>
+      <div class="btn r"><div class="dot"></div>STAY HIDDEN &amp;<br>DON'T OPEN IT</div>
+      <div class="bottom">WHAT DO YOU DO? Comment below —<br>Part 2 drops tomorrow.</div></div>
+    <div id="sub"><span id="subtxt"></span></div>
+  </div>
+</div>
+<script type="module" src="scene.js"></script>
+</body>
+</html>
