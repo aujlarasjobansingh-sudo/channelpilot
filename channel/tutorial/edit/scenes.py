@@ -8,6 +8,71 @@ MUSIC_DB = -30
 EP = "/home/user/channelpilot/channel/ep01_2d/part2/out/ep01_part1_2_combined.mp4"
 PREV1 = "/home/user/channelpilot/channel/ep01_2d/out/preview_2d_14s.mp4"
 PREV2 = "/home/user/channelpilot/channel/ep01_2d/out/preview_2d_premium.mp4"
+
+# ---------------- app icons (recognisable Mac-style app icons, drawn in code) + Claude mark
+import comps as _comps
+def claude_mark(c, x, y, r, color="#d97757", rot=0.0):
+    """Claude-style starburst: tapered rays of uneven length"""
+    lens = [1.0, .82, .95, .78, 1.0, .86, .92, .8, .98, .84, .9, .79]
+    p = paint(col(color))
+    for k, L in enumerate(lens):
+        a = rot + k * math.pi * 2 / len(lens)
+        ca, sa = math.cos(a), math.sin(a); w = r * .13
+        path = skia.Path(); path.moveTo(x - sa * w, y + ca * w); path.lineTo(x + ca * r * L, y + sa * r * L); path.lineTo(x + sa * w, y - ca * w); path.close()
+        c.drawPath(path, p)
+    c.drawCircle(x, y, r * .2, p)
+def _spark(c, x, y, r, color="#d97757", rot=0): claude_mark(c, x, y, r * 1.1, color, rot)
+_comps.spark = _spark; spark = _spark
+
+def _icon_bg(c, x, y, s, top, bot):
+    c.drawRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(x, y, s, s), s * .23, s * .23),
+                skia.Paint(AntiAlias=True, Shader=skia.GradientShader.MakeLinear([(x, y), (x, y + s)], [col(top), col(bot)])))
+def app_icon(c, kind, x, y, s):
+    cx, cy = x + s / 2, y + s / 2
+    if kind == "finder":
+        c.save(); c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(x, y, s, s), s * .23, s * .23), True)
+        c.drawRect(skia.Rect.MakeXYWH(x, y, s / 2 + s * .04, s), paint(col("#1e8cf0"))); c.drawRect(skia.Rect.MakeXYWH(x + s / 2 + s * .04, y, s / 2, s), paint(col("#e8f2fc")))
+        pp = paint(col("#0b1e3a"), style="stroke", sw=s * .05); pp.setStrokeCap(skia.Paint.kRound_Cap)
+        path = skia.Path(); path.moveTo(cx + s * .06, y + s * .12); path.cubicTo(cx - s * .06, cy - s * .1, cx + s * .1, cy, cx - s * .02, y + s * .86); c.drawPath(path, pp)
+        for ex in (cx - s * .2, cx + s * .2): c.drawLine(ex, cy - s * .16, ex, cy - s * .04, pp)
+        sm = skia.Path(); sm.moveTo(cx - s * .28, cy + s * .14); sm.quadTo(cx, cy + s * .3, cx + s * .28, cy + s * .14); c.drawPath(sm, pp)
+        c.restore()
+    elif kind == "claude":
+        _icon_bg(c, x, y, s, "#f6f1e7", "#ece4d6"); claude_mark(c, cx, cy, s * .34)
+    elif kind == "browser":
+        _icon_bg(c, x, y, s, "#ffffff", "#e9eef5")
+        c.drawCircle(cx, cy, s * .38, skia.Paint(AntiAlias=True, Shader=skia.GradientShader.MakeLinear([(cx, cy - s * .38), (cx, cy + s * .38)], [col("#3fc3ff"), col("#1a6cf2")])))
+        for k in range(24):
+            a = k * math.pi / 12; r1 = s * .33 if k % 2 else s * .3
+            c.drawLine(cx + math.cos(a) * r1, cy + math.sin(a) * r1, cx + math.cos(a) * s * .36, cy + math.sin(a) * s * .36, paint(col("#ffffff", .8), style="stroke", sw=1.2))
+        n1 = skia.Path(); n1.moveTo(cx + s * .2, cy - s * .2); n1.lineTo(cx + s * .04, cy + s * .04); n1.lineTo(cx - s * .04, cy - s * .04); n1.close(); c.drawPath(n1, paint(col("#ff3b30")))
+        n2 = skia.Path(); n2.moveTo(cx - s * .2, cy + s * .2); n2.lineTo(cx + s * .04, cy + s * .04); n2.lineTo(cx - s * .04, cy - s * .04); n2.close(); c.drawPath(n2, paint(col("#ffffff")))
+    elif kind == "code":
+        _icon_bg(c, x, y, s, "#2aa3f0", "#0a66c2")
+        pp = paint(col("#ffffff"), style="stroke", sw=s * .09); pp.setStrokeCap(skia.Paint.kRound_Cap); pp.setStrokeJoin(skia.Paint.kRound_Join)
+        l = skia.Path(); l.moveTo(cx - s * .08, cy - s * .2); l.lineTo(cx - s * .26, cy); l.lineTo(cx - s * .08, cy + s * .2); c.drawPath(l, pp)
+        r_ = skia.Path(); r_.moveTo(cx + s * .08, cy - s * .2); r_.lineTo(cx + s * .26, cy); r_.lineTo(cx + s * .08, cy + s * .2); c.drawPath(r_, pp)
+    elif kind == "term":
+        _icon_bg(c, x, y, s, "#3a3a3c", "#1c1c1e"); rrect(c, x + s * .1, y + s * .14, s * .8, s * .72, s * .08, "#000000")
+        text(c, ">_", x + s * .18, cy + s * .1, s * .3, "b", "#ffffff")
+    elif kind == "music":
+        _icon_bg(c, x, y, s, "#ff5f6d", "#fa233b")
+        pw = paint(col("#ffffff"))
+        c.drawOval(skia.Rect.MakeXYWH(cx - s * .26, cy + s * .08, s * .2, s * .15), pw); c.drawOval(skia.Rect.MakeXYWH(cx + s * .02, cy + s * .02, s * .2, s * .15), pw)
+        ps = paint(col("#ffffff"), style="stroke", sw=s * .05)
+        c.drawLine(cx - s * .08, cy + s * .14, cx - s * .08, cy - s * .22, ps); c.drawLine(cx + s * .2, cy + s * .08, cx + s * .2, cy - s * .28, ps)
+        q = skia.Path(); q.moveTo(cx - s * .08, cy - s * .22); q.lineTo(cx + s * .2, cy - s * .28); q.lineTo(cx + s * .2, cy - s * .18); q.lineTo(cx - s * .08, cy - s * .12); q.close(); c.drawPath(q, pw)
+APPS = ["finder", "claude", "browser", "code", "term", "music"]
+def dock(c, active=-1, a=1.0):
+    n = len(APPS); s = 58; g = 12; dw = n * s + (n + 1) * g; dh = s + 2 * g * .9
+    x0 = (W - dw) / 2; y0 = H - dh - 12
+    rrect(c, x0, y0, dw, dh, 22, "#ffffff", 0.22 * a); rrect_stroke(c, x0, y0, dw, dh, 22, "#ffffff", 0.25 * a, 1.2)
+    for i, k in enumerate(APPS):
+        x = x0 + g + i * (s + g); y = y0 + (dh - s) / 2
+        shadow(c, x, y, s, s, s * .23, .3, 8, 3); app_icon(c, k, x, y, s)
+        if i == active: c.drawCircle(x + s / 2, y0 + dh - 5, 2.6, paint(col("#ffffff", .9 * a)))
+_comps.dock = dock
+
 CHAT_HISTORY[:] = ["Faceless rules", "World bible", "EP01 part 1", "EP01 part 2"]
 
 _WS = json.load(open(ROOT + "/vo/words.json"))
@@ -567,4 +632,4 @@ B = [0.0, cut("what if you had"), cut("every video is"), cut("now look at"), cut
      cut("and thats it", 240), cut("all of that"), cut("now the mistake"), cut("the reason was"), cut("thats my entire"), 307.83]
 FNS = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24]
 SCENES = [(f"s{i + 1:02d}", B[i], B[i + 1], FNS[i]) for i in range(len(FNS))]
-INSERTS = [dict(id="x1", after=B[20], path=ROOT + "/assets/result_reel.mp4", dur=81.7, label="RESULT - made with Claude", color=CORAL)]
+INSERTS = [dict(id="x1", after=B[20], path=ROOT + "/assets/result_reel_long.mp4", dur=272.0, label="RESULT - made with Claude", color=CORAL)]
