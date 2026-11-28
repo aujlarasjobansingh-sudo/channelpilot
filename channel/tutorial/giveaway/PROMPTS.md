@@ -1,5 +1,7 @@
 # Free Prompts: Make AI-Animated "What If" Story Videos with Claude
 
+**Made by aivxer.** Copyright (c) 2026 aivxer. Free for your own videos. Please don't re-share these files or claim them as your own; share the link to aivxer's video instead.
+
 Use these in order. Paste them into Claude exactly as written, and change only the parts in [brackets].
 
 ---
@@ -52,7 +54,7 @@ Paste each part into ElevenLabs, pick a deep, calm English storytelling voice, a
 
 ## Step 4: Animation
 
-First, upload the free skill (the `2d-animation-long-form-aivxer` folder in this pack, zipped) in Claude's settings under Customize → Skills → + → Upload a skill. Check that this matches the menu in your own Claude app.
+First, upload the free skill (the `3d-animation-long-form-aivxer.zip` in this pack) in Claude's settings under Customize → Skills → + → Upload a skill. Check that this matches the menu in your own Claude app.
 
 **Prompt 5: Set the style**
 *(attach a reference image or video of the look you like)*
@@ -99,4 +101,4 @@ The voice and the scenes are out of sync. Transcribe my voiceover with word time
 
 ---
 
-Made by aivxer. If you make a video with this, drop the link in the comments!
+3D Animation Long Form skill and prompts, made by aivxer. If you make a video with this, drop the link in the comments!
